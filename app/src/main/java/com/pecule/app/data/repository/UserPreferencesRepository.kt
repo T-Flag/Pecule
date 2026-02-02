@@ -4,8 +4,11 @@ import com.pecule.app.data.local.datastore.ThemePreference
 import com.pecule.app.data.local.datastore.UserPreferences
 import com.pecule.app.data.local.datastore.UserPreferencesDataStore
 import kotlinx.coroutines.flow.Flow
+import javax.inject.Inject
+import javax.inject.Singleton
 
-class UserPreferencesRepository(
+@Singleton
+class UserPreferencesRepository @Inject constructor(
     private val dataStore: UserPreferencesDataStore
 ) {
     val userPreferences: Flow<UserPreferences> = dataStore.userPreferences

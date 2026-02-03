@@ -7,13 +7,17 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.pecule.app.ui.navigation.BottomNavBar
 import com.pecule.app.ui.navigation.PeculeNavHost
 import com.pecule.app.ui.navigation.Routes
+import com.pecule.app.ui.screens.onboarding.OnboardingDialog
+import com.pecule.app.ui.screens.onboarding.OnboardingViewModel
 import com.pecule.app.ui.theme.PeculeTheme
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -24,6 +28,9 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             PeculeTheme {
+                val onboardingViewModel: OnboardingViewModel = hiltViewModel()
+                val isFirstLaunch by onboardingViewModel.isFirstLaunch.collectAsState()
+
                 val navController = rememberNavController()
                 val currentBackStackEntry by navController.currentBackStackEntryAsState()
                 val currentRoute = currentBackStackEntry?.destination?.route
@@ -41,6 +48,14 @@ class MainActivity : ComponentActivity() {
                     PeculeNavHost(
                         navController = navController,
                         modifier = Modifier.padding(innerPadding)
+                    )
+                }
+
+                if (isFirstLaunch) {
+                    OnboardingDialog(
+                        onComplete = { firstName, amount, date ->
+                            onboardingViewModel.completeOnboarding(firstName, amount, date)
+                        }
                     )
                 }
             }

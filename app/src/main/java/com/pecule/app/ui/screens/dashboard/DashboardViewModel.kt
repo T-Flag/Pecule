@@ -27,8 +27,8 @@ import javax.inject.Inject
 class DashboardViewModel @Inject constructor(
     private val userPreferencesRepository: IUserPreferencesRepository,
     private val budgetCycleRepository: IBudgetCycleRepository,
-    private val expenseRepository: IExpenseRepository,
-    private val incomeRepository: IIncomeRepository,
+    val expenseRepository: IExpenseRepository,
+    val incomeRepository: IIncomeRepository,
     private val balanceCalculator: BalanceCalculator
 ) : ViewModel() {
 
@@ -38,6 +38,14 @@ class DashboardViewModel @Inject constructor(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),
             initialValue = ""
+        )
+
+    val currentCycleId: StateFlow<Long?> = budgetCycleRepository.currentCycle
+        .map { it?.id }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = null
         )
 
     private val currentCycleWithTransactions = budgetCycleRepository.currentCycle

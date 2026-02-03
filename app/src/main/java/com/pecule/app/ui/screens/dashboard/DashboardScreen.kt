@@ -15,13 +15,23 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -32,9 +42,13 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.pecule.app.data.local.database.entity.Category
 import com.pecule.app.domain.Transaction
+import com.pecule.app.ui.components.AddTransactionDialog
+import com.pecule.app.ui.components.AddTransactionUiState
+import com.pecule.app.ui.components.AddTransactionViewModel
 import com.pecule.app.ui.components.BalanceCard
 import com.pecule.app.ui.components.TransactionItem
 import com.pecule.app.ui.theme.PeculeTheme
+import kotlinx.coroutines.launch
 import java.time.LocalDate
 
 @Composable
@@ -47,15 +61,114 @@ fun DashboardScreen(
     val currentBalance by viewModel.currentBalance.collectAsStateWithLifecycle()
     val budgetPercentageUsed by viewModel.budgetPercentageUsed.collectAsStateWithLifecycle()
     val recentTransactions by viewModel.recentTransactions.collectAsStateWithLifecycle()
+    val currentCycleId by viewModel.currentCycleId.collectAsStateWithLifecycle()
 
-    DashboardContent(
-        userName = userName,
-        currentBalance = currentBalance,
-        budgetPercentageUsed = budgetPercentageUsed,
-        recentTransactions = recentTransactions,
-        onNavigateToProfile = onNavigateToProfile,
-        modifier = modifier
-    )
+    var showFabMenu by remember { mutableStateOf(false) }
+    var showAddDialog by remember { mutableStateOf(false) }
+    var isExpenseDialog by remember { mutableStateOf(true) }
+
+    Scaffold(
+        modifier = modifier,
+        floatingActionButton = {
+            if (currentCycleId != null) {
+                Box {
+                    FloatingActionButton(
+                        onClick = { showFabMenu = true },
+                        containerColor = MaterialTheme.colorScheme.primary,
+                        contentColor = MaterialTheme.colorScheme.onPrimary
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.Add,
+                            contentDescription = "Ajouter une transaction"
+                        )
+                    }
+
+                    DropdownMenu(
+                        expanded = showFabMenu,
+                        onDismissRequest = { showFabMenu = false }
+                    ) {
+                        DropdownMenuItem(
+                            text = { Text("Dépense") },
+                            onClick = {
+                                showFabMenu = false
+                                isExpenseDialog = true
+                                showAddDialog = true
+                            }
+                        )
+                        DropdownMenuItem(
+                            text = { Text("Revenu") },
+                            onClick = {
+                                showFabMenu = false
+                                isExpenseDialog = false
+                                showAddDialog = true
+                            }
+                        )
+                    }
+                }
+            }
+        }
+    ) { paddingValues ->
+        DashboardContent(
+            userName = userName,
+            currentBalance = currentBalance,
+            budgetPercentageUsed = budgetPercentageUsed,
+            recentTransactions = recentTransactions,
+            onNavigateToProfile = onNavigateToProfile,
+            modifier = Modifier.padding(paddingValues)
+        )
+    }
+
+    // Add Transaction Dialog
+    if (showAddDialog && currentCycleId != null) {
+        val scope = rememberCoroutineScope()
+        var errors by remember { mutableStateOf<List<String>>(emptyList()) }
+
+        val addViewModel = remember(isExpenseDialog, currentCycleId) {
+            AddTransactionViewModel(
+                expenseRepository = viewModel.expenseRepository,
+                incomeRepository = viewModel.incomeRepository,
+                isExpense = isExpenseDialog,
+                cycleId = currentCycleId!!,
+                existingTransaction = null
+            )
+        }
+
+        var uiState by remember { mutableStateOf(AddTransactionUiState(isExpense = isExpenseDialog)) }
+        LaunchedEffect(addViewModel) {
+            addViewModel.uiState.collect { uiState = it }
+        }
+
+        AddTransactionDialog(
+            isExpense = uiState.isExpense,
+            isEditing = uiState.isEditing,
+            label = uiState.label,
+            amount = uiState.amount,
+            category = uiState.category,
+            date = uiState.date,
+            isFixed = uiState.isFixed,
+            errors = errors,
+            onLabelChange = { addViewModel.updateLabel(it) },
+            onAmountChange = { addViewModel.updateAmount(it) },
+            onCategoryChange = { addViewModel.updateCategory(it) },
+            onDateChange = { addViewModel.updateDate(it) },
+            onIsFixedChange = { addViewModel.toggleIsFixed() },
+            onDismiss = {
+                showAddDialog = false
+                errors = emptyList()
+            },
+            onSave = {
+                scope.launch {
+                    val result = addViewModel.save()
+                    if (result.isSuccess) {
+                        showAddDialog = false
+                        errors = emptyList()
+                    } else {
+                        errors = result.errors
+                    }
+                }
+            }
+        )
+    }
 }
 
 @Composable

@@ -98,14 +98,16 @@ Unit tests are in `app/src/test/java/com/pecule/app/`:
 | Fichier | Tests | Description |
 |---------|-------|-------------|
 | `ConvertersTest.kt` | 7 | Room type converters |
-| `UserPreferencesTest.kt` | 5 | DataStore models |
+| `UserPreferencesTest.kt` | 4 | DataStore models |
 | `BudgetCycleRepositoryTest.kt` | 10 | Repository CRUD |
 | `OnboardingViewModelTest.kt` | 6 | Onboarding logic |
-| `OnboardingValidationTest.kt` | 15 | Form validation |
+| `OnboardingValidationTest.kt` | 18 | Form validation |
 | `BalanceCalculatorTest.kt` | 6 | Balance calculations |
 | `DashboardViewModelTest.kt` | 6 | Dashboard logic |
+| `TransactionDialogValidationTest.kt` | 17 | Transaction form validation |
+| `AddTransactionViewModelTest.kt` | 22 | Add/edit transaction logic |
 
-**Total : 55+ tests**
+**Total : 97 tests**
 
 Use JUnit 4 assertions. For coroutines, use `kotlinx-coroutines-test` with `runTest`.
 Fake repositories are in test directories for mocking.
@@ -159,24 +161,35 @@ When a new salary is added:
 - Composables should have parameters for testability and previews
 - French UI labels, English code
 
-## Current State (Work in Progress)
+## UI Components (`ui/components/`)
+
+| Component | Description |
+|-----------|-------------|
+| `SemiCircularGauge` | Canvas gauge showing percentage (0-100%) |
+| `BalanceCard` | Card with balance, gauge, and percentage text |
+| `TransactionItem` | List item for expense/income display |
+| `AddTransactionDialog` | Universal dialog for create/edit transactions |
+
+## Current State
 
 ### Completed
-- Project setup with Compose + Material 3
-- Room database (BudgetCycle, Expense, Income entities)
-- DataStore for user preferences
-- Hilt dependency injection
-- Navigation with BottomNavBar (3 tabs + Profile)
+- Project setup (Compose, Material 3, Hilt, Room, DataStore)
+- Database entities (BudgetCycle, Expense, Income, Category)
+- Repository interfaces and implementations
+- Navigation with BottomNavBar (Accueil, Budget, Stats)
 - Onboarding dialog with DatePicker
-- BalanceCalculator for business logic
-- DashboardViewModel
+- Dashboard with BalanceCard, SemiCircularGauge, TransactionItem
+- DashboardViewModel with BalanceCalculator
+- AddTransactionDialog (create/edit expenses and incomes)
+- FAB with dropdown menu (Dépense/Revenu)
+- 97 unit tests passing
 
 ### In Progress
-- Dashboard UI (balance card, gauge, recent transactions)
+- Budget screen (list transactions by type)
 
 ### Todo
-- Budget screen (fixed/variable/income tabs)
 - Statistics screen (donut chart, cycle selector)
-- Profile screen (name edit, theme toggle)
-- Add/Edit transaction dialog
+- Profile screen (edit name, change theme)
+- Edit/delete transactions (long press)
 - Auto-duplicate fixed items on new cycle
+- Add new salary (create new cycle)

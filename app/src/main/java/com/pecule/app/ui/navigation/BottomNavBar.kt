@@ -1,9 +1,9 @@
 package com.pecule.app.ui.navigation
 
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Star
-import androidx.compose.material.icons.filled.List
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -22,7 +22,7 @@ data class BottomNavItem(
 val bottomNavItems = listOf(
     BottomNavItem(Routes.Dashboard.route, "Accueil", Icons.Default.Home),
     BottomNavItem(Routes.Budget.route, "Budget", Icons.Default.Star),
-    BottomNavItem(Routes.Statistics.route, "Stats", Icons.Default.List)
+    BottomNavItem(Routes.Statistics.route, "Stats", Icons.AutoMirrored.Filled.List)
 )
 
 @Composable

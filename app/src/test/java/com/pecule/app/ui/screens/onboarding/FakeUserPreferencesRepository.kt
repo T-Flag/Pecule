@@ -2,18 +2,19 @@ package com.pecule.app.ui.screens.onboarding
 
 import com.pecule.app.data.local.datastore.ThemePreference
 import com.pecule.app.data.local.datastore.UserPreferences
+import com.pecule.app.data.repository.IUserPreferencesRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.map
 
-class FakeUserPreferencesRepository {
+class FakeUserPreferencesRepository : IUserPreferencesRepository {
     private val _userPreferences = MutableStateFlow(UserPreferences())
 
-    val userPreferences: Flow<UserPreferences> = _userPreferences
+    override val userPreferences: Flow<UserPreferences> = _userPreferences
 
-    val isFirstLaunch: Flow<Boolean> = _userPreferences.map { it.firstName.isEmpty() }
+    override val isFirstLaunch: Flow<Boolean> = _userPreferences.map { it.firstName.isEmpty() }
 
-    suspend fun updateFirstName(firstName: String) {
+    override suspend fun updateFirstName(firstName: String) {
         _userPreferences.value = _userPreferences.value.copy(firstName = firstName)
     }
 

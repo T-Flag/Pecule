@@ -40,6 +40,8 @@ The project follows **Clean Architecture** with three layers:
 ### Domain Layer (`domain/`)
 - Business models and logic
 - Category enum with French labels and Material icons
+- `BalanceCalculator.kt` - Calculs de solde et pourcentage consommé
+- `Transaction.kt` - Data class pour l'affichage unifié dépenses/revenus
 
 ### UI Layer (`ui/`)
 - **Jetpack Compose** screens in `screens/` subdirectories
@@ -66,6 +68,16 @@ Hilt is configured with:
 - `DataStoreModule` provides UserPreferencesDataStore
 - `MainActivity` annotated with `@AndroidEntryPoint`
 
+## Repository Interfaces
+
+Les repositories utilisent des interfaces pour la testabilité :
+- `IUserPreferencesRepository` → `UserPreferencesRepository`
+- `IBudgetCycleRepository` → `BudgetCycleRepository`
+- `IExpenseRepository` → `ExpenseRepository`
+- `IIncomeRepository` → `IncomeRepository`
+
+Les bindings Hilt sont dans `di/RepositoryModule.kt`.
+
 ## Database Schema
 
 Three main entities with foreign key relationships:
@@ -82,10 +94,21 @@ Dependencies are managed in `gradle/libs.versions.toml`. Add new dependencies th
 ## Testing
 
 Unit tests are in `app/src/test/java/com/pecule/app/`:
-- `ConvertersTest.kt` - Room type converters
-- `UserPreferencesTest.kt` - DataStore models
 
-Use JUnit 4 assertions. Room DAOs can be tested with in-memory database.
+| Fichier | Tests | Description |
+|---------|-------|-------------|
+| `ConvertersTest.kt` | 7 | Room type converters |
+| `UserPreferencesTest.kt` | 5 | DataStore models |
+| `BudgetCycleRepositoryTest.kt` | 10 | Repository CRUD |
+| `OnboardingViewModelTest.kt` | 6 | Onboarding logic |
+| `OnboardingValidationTest.kt` | 15 | Form validation |
+| `BalanceCalculatorTest.kt` | 6 | Balance calculations |
+| `DashboardViewModelTest.kt` | 6 | Dashboard logic |
+
+**Total : 55+ tests**
+
+Use JUnit 4 assertions. For coroutines, use `kotlinx-coroutines-test` with `runTest`.
+Fake repositories are in test directories for mocking.
 
 ## Business Logic
 
@@ -135,3 +158,25 @@ When a new salary is added:
 - Never hardcode colors - use `MaterialTheme.colorScheme`
 - Composables should have parameters for testability and previews
 - French UI labels, English code
+
+## Current State (Work in Progress)
+
+### Completed
+- Project setup with Compose + Material 3
+- Room database (BudgetCycle, Expense, Income entities)
+- DataStore for user preferences
+- Hilt dependency injection
+- Navigation with BottomNavBar (3 tabs + Profile)
+- Onboarding dialog with DatePicker
+- BalanceCalculator for business logic
+- DashboardViewModel
+
+### In Progress
+- Dashboard UI (balance card, gauge, recent transactions)
+
+### Todo
+- Budget screen (fixed/variable/income tabs)
+- Statistics screen (donut chart, cycle selector)
+- Profile screen (name edit, theme toggle)
+- Add/Edit transaction dialog
+- Auto-duplicate fixed items on new cycle

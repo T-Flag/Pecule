@@ -9,13 +9,13 @@ import javax.inject.Singleton
 @Singleton
 class IncomeRepository @Inject constructor(
     private val incomeDao: IncomeDao
-) {
-    suspend fun insert(income: Income): Long = incomeDao.insert(income)
-    suspend fun update(income: Income) = incomeDao.update(income)
-    suspend fun delete(income: Income) = incomeDao.delete(income)
+) : IIncomeRepository {
+    override suspend fun insert(income: Income): Long = incomeDao.insert(income)
+    override suspend fun update(income: Income) = incomeDao.update(income)
+    override suspend fun delete(income: Income) = incomeDao.delete(income)
 
-    fun getById(id: Long): Flow<Income?> = incomeDao.getById(id)
-    fun getByCycleId(cycleId: Long): Flow<List<Income>> = incomeDao.getByCycleId(cycleId)
-    fun getFixedIncomes(cycleId: Long): Flow<List<Income>> = incomeDao.getFixedIncomes(cycleId)
-    fun getVariableIncomes(cycleId: Long): Flow<List<Income>> = incomeDao.getVariableIncomes(cycleId)
+    override fun getById(id: Long): Flow<Income?> = incomeDao.getById(id)
+    override fun getByCycleId(cycleId: Long): Flow<List<Income>> = incomeDao.getByCycleId(cycleId)
+    override fun getFixedIncomes(cycleId: Long): Flow<List<Income>> = incomeDao.getFixedIncomes(cycleId)
+    override fun getVariableIncomes(cycleId: Long): Flow<List<Income>> = incomeDao.getVariableIncomes(cycleId)
 }

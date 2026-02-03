@@ -9,13 +9,13 @@ import javax.inject.Singleton
 @Singleton
 class ExpenseRepository @Inject constructor(
     private val expenseDao: ExpenseDao
-) {
-    suspend fun insert(expense: Expense): Long = expenseDao.insert(expense)
-    suspend fun update(expense: Expense) = expenseDao.update(expense)
-    suspend fun delete(expense: Expense) = expenseDao.delete(expense)
+) : IExpenseRepository {
+    override suspend fun insert(expense: Expense): Long = expenseDao.insert(expense)
+    override suspend fun update(expense: Expense) = expenseDao.update(expense)
+    override suspend fun delete(expense: Expense) = expenseDao.delete(expense)
 
-    fun getById(id: Long): Flow<Expense?> = expenseDao.getById(id)
-    fun getByCycleId(cycleId: Long): Flow<List<Expense>> = expenseDao.getByCycleId(cycleId)
-    fun getFixedExpenses(cycleId: Long): Flow<List<Expense>> = expenseDao.getFixedExpenses(cycleId)
-    fun getVariableExpenses(cycleId: Long): Flow<List<Expense>> = expenseDao.getVariableExpenses(cycleId)
+    override fun getById(id: Long): Flow<Expense?> = expenseDao.getById(id)
+    override fun getByCycleId(cycleId: Long): Flow<List<Expense>> = expenseDao.getByCycleId(cycleId)
+    override fun getFixedExpenses(cycleId: Long): Flow<List<Expense>> = expenseDao.getFixedExpenses(cycleId)
+    override fun getVariableExpenses(cycleId: Long): Flow<List<Expense>> = expenseDao.getVariableExpenses(cycleId)
 }

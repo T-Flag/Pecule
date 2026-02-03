@@ -3,8 +3,8 @@ package com.pecule.app.ui.screens.onboarding
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.pecule.app.data.local.database.entity.BudgetCycle
-import com.pecule.app.data.repository.BudgetCycleRepository
-import com.pecule.app.data.repository.UserPreferencesRepository
+import com.pecule.app.data.repository.IBudgetCycleRepository
+import com.pecule.app.data.repository.IUserPreferencesRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -15,8 +15,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class OnboardingViewModel @Inject constructor(
-    private val userPreferencesRepository: UserPreferencesRepository,
-    private val budgetCycleRepository: BudgetCycleRepository
+    private val userPreferencesRepository: IUserPreferencesRepository,
+    private val budgetCycleRepository: IBudgetCycleRepository
 ) : ViewModel() {
 
     val isFirstLaunch: StateFlow<Boolean> = userPreferencesRepository.isFirstLaunch

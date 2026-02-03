@@ -10,12 +10,12 @@ import javax.inject.Singleton
 @Singleton
 class UserPreferencesRepository @Inject constructor(
     private val dataStore: UserPreferencesDataStore
-) {
-    val userPreferences: Flow<UserPreferences> = dataStore.userPreferences
+) : IUserPreferencesRepository {
+    override val userPreferences: Flow<UserPreferences> = dataStore.userPreferences
 
-    val isFirstLaunch: Flow<Boolean> = dataStore.isFirstLaunch
+    override val isFirstLaunch: Flow<Boolean> = dataStore.isFirstLaunch
 
-    suspend fun updateFirstName(firstName: String) {
+    override suspend fun updateFirstName(firstName: String) {
         dataStore.updateFirstName(firstName)
     }
 

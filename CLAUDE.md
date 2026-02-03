@@ -108,8 +108,9 @@ Unit tests are in `app/src/test/java/com/pecule/app/`:
 | `AddTransactionViewModelTest.kt` | 22 | Add/edit transaction logic |
 | `BudgetViewModelTest.kt` | 10 | Budget screen logic |
 | `ProfileViewModelTest.kt` | 9 | Profile screen logic |
+| `StatisticsViewModelTest.kt` | 9 | Statistics screen logic |
 
-**Total : 116 tests**
+**Total : 125 tests**
 
 Use JUnit 4 assertions. For coroutines, use `kotlinx-coroutines-test` with `runTest`.
 Fake repositories are in test directories for mocking.
@@ -196,19 +197,15 @@ PeculeTheme accepts `themePreference` parameter and applies the correct color sc
 - Project setup (Compose, Material 3, Hilt, Room, DataStore)
 - Database entities (BudgetCycle, Expense, Income, Category)
 - Repository interfaces and implementations
-- Navigation with BottomNavBar (Accueil, Budget, Stats)
+- Navigation with BottomNavBar
 - Onboarding dialog with DatePicker
 - Dashboard: BalanceCard, SemiCircularGauge, TransactionItem, FAB
-- DashboardViewModel with BalanceCalculator
 - AddTransactionDialog (create/edit expenses and incomes)
-- Budget screen: 3 tabs (Fixe, Variable, Revenus), totals, edit/delete
-- Profile screen: edit name, theme selector (Auto/Light/Dark)
-- Real-time theme switching
-- 116 unit tests passing
-
-### In Progress 🚧
-- Statistics screen (donut chart, cycle selector)
+- Budget screen: 3 tabs, totals, edit/delete
+- Profile screen: edit name, theme selector
+- StatisticsViewModel (logic ready)
+- 125 unit tests passing
 
 ### Todo 📋
-- Statistics screen with donut chart and cycle history
+- Statistics screen UI (donut chart, cycle selector)
 - Add new salary (create new cycle, auto-duplicate fixed items)

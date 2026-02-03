@@ -5,6 +5,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import com.pecule.app.data.local.datastore.ThemePreference
 
 private val LightColorScheme = lightColorScheme(
     primary = MintPrimary,
@@ -30,10 +31,17 @@ private val DarkColorScheme = darkColorScheme(
 
 @Composable
 fun PeculeTheme(
+    themePreference: ThemePreference = ThemePreference.AUTO,
     darkTheme: Boolean = isSystemInDarkTheme(),
     content: @Composable () -> Unit
 ) {
-    val colorScheme = if (darkTheme) DarkColorScheme else LightColorScheme
+    val useDarkTheme = when (themePreference) {
+        ThemePreference.AUTO -> darkTheme
+        ThemePreference.LIGHT -> false
+        ThemePreference.DARK -> true
+    }
+
+    val colorScheme = if (useDarkTheme) DarkColorScheme else LightColorScheme
 
     MaterialTheme(
         colorScheme = colorScheme,

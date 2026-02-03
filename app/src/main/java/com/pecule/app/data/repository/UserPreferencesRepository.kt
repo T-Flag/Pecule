@@ -19,7 +19,7 @@ class UserPreferencesRepository @Inject constructor(
         dataStore.updateFirstName(firstName)
     }
 
-    suspend fun updateTheme(theme: ThemePreference) {
+    override suspend fun updateTheme(theme: ThemePreference) {
         dataStore.updateTheme(theme)
     }
 }

@@ -106,8 +106,10 @@ Unit tests are in `app/src/test/java/com/pecule/app/`:
 | `DashboardViewModelTest.kt` | 6 | Dashboard logic |
 | `TransactionDialogValidationTest.kt` | 17 | Transaction form validation |
 | `AddTransactionViewModelTest.kt` | 22 | Add/edit transaction logic |
+| `BudgetViewModelTest.kt` | 10 | Budget screen logic |
+| `ProfileViewModelTest.kt` | 9 | Profile screen logic |
 
-**Total : 97 tests**
+**Total : 116 tests**
 
 Use JUnit 4 assertions. For coroutines, use `kotlinx-coroutines-test` with `runTest`.
 Fake repositories are in test directories for mocking.
@@ -170,26 +172,43 @@ When a new salary is added:
 | `TransactionItem` | List item for expense/income display |
 | `AddTransactionDialog` | Universal dialog for create/edit transactions |
 
+## Screens (`ui/screens/`)
+
+| Screen | Features |
+|--------|----------|
+| Dashboard | Balance card, gauge, recent transactions, FAB |
+| Budget | 3 tabs, transaction lists, totals, edit/delete, FAB |
+| Statistics | (TODO) Donut chart, cycle selector |
+| Profile | Edit name, theme selector (Auto/Light/Dark) |
+
+## Theme System
+
+Theme preference is stored in DataStore and observed in MainActivity.
+- `ThemePreference.AUTO` → follows system setting
+- `ThemePreference.LIGHT` → always light
+- `ThemePreference.DARK` → always dark
+
+PeculeTheme accepts `themePreference` parameter and applies the correct color scheme.
+
 ## Current State
 
-### Completed
+### Completed ✅
 - Project setup (Compose, Material 3, Hilt, Room, DataStore)
 - Database entities (BudgetCycle, Expense, Income, Category)
 - Repository interfaces and implementations
 - Navigation with BottomNavBar (Accueil, Budget, Stats)
 - Onboarding dialog with DatePicker
-- Dashboard with BalanceCard, SemiCircularGauge, TransactionItem
+- Dashboard: BalanceCard, SemiCircularGauge, TransactionItem, FAB
 - DashboardViewModel with BalanceCalculator
 - AddTransactionDialog (create/edit expenses and incomes)
-- FAB with dropdown menu (Dépense/Revenu)
-- 97 unit tests passing
+- Budget screen: 3 tabs (Fixe, Variable, Revenus), totals, edit/delete
+- Profile screen: edit name, theme selector (Auto/Light/Dark)
+- Real-time theme switching
+- 116 unit tests passing
 
-### In Progress
-- Budget screen (list transactions by type)
-
-### Todo
+### In Progress 🚧
 - Statistics screen (donut chart, cycle selector)
-- Profile screen (edit name, change theme)
-- Edit/delete transactions (long press)
-- Auto-duplicate fixed items on new cycle
-- Add new salary (create new cycle)
+
+### Todo 📋
+- Statistics screen with donut chart and cycle history
+- Add new salary (create new cycle, auto-duplicate fixed items)

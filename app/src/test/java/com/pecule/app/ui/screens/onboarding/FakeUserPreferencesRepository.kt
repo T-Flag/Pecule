@@ -18,7 +18,7 @@ class FakeUserPreferencesRepository : IUserPreferencesRepository {
         _userPreferences.value = _userPreferences.value.copy(firstName = firstName)
     }
 
-    suspend fun updateTheme(theme: ThemePreference) {
+    override suspend fun updateTheme(theme: ThemePreference) {
         _userPreferences.value = _userPreferences.value.copy(theme = theme)
     }
 

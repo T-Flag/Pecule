@@ -13,6 +13,8 @@ import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.pecule.app.data.local.datastore.ThemePreference
+import com.pecule.app.data.repository.IUserPreferencesRepository
 import com.pecule.app.ui.navigation.BottomNavBar
 import com.pecule.app.ui.navigation.PeculeNavHost
 import com.pecule.app.ui.navigation.Routes
@@ -20,14 +22,24 @@ import com.pecule.app.ui.screens.onboarding.OnboardingDialog
 import com.pecule.app.ui.screens.onboarding.OnboardingViewModel
 import com.pecule.app.ui.theme.PeculeTheme
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.map
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+
+    @Inject
+    lateinit var userPreferencesRepository: IUserPreferencesRepository
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            PeculeTheme {
+            val themePreference by userPreferencesRepository.userPreferences
+                .map { it.theme }
+                .collectAsState(initial = ThemePreference.AUTO)
+
+            PeculeTheme(themePreference = themePreference) {
                 val onboardingViewModel: OnboardingViewModel = hiltViewModel()
                 val isFirstLaunch by onboardingViewModel.isFirstLaunch.collectAsState()
 

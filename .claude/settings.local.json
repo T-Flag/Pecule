@@ -9,7 +9,8 @@
       "Bash(find:*)",
       "Bash(while read f)",
       "Bash(done)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(JAVA_HOME=\"C:/Program Files/Android/Android Studio/jbr\" ./gradlew.bat:*)"
     ]
   }
 }

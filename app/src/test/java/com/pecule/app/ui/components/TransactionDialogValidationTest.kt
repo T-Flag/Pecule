@@ -1,12 +1,14 @@
 package com.pecule.app.ui.components
 
-import com.pecule.app.data.local.database.entity.Category
+import com.pecule.app.domain.CategoryInitializer
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.time.LocalDate
 
 class TransactionDialogValidationTest {
+
+    private val foodCategory = CategoryInitializer.DEFAULT_CATEGORIES.find { it.name == "Alimentation" }
 
     // ==================== LABEL TESTS ====================
 
@@ -15,7 +17,7 @@ class TransactionDialogValidationTest {
         val errors = validateTransaction(
             label = "",
             amount = 100.0,
-            category = Category.FOOD,
+            category = foodCategory,
             date = LocalDate.now(),
             isExpense = true
         )
@@ -28,7 +30,7 @@ class TransactionDialogValidationTest {
         val errors = validateTransaction(
             label = "   ",
             amount = 100.0,
-            category = Category.FOOD,
+            category = foodCategory,
             date = LocalDate.now(),
             isExpense = true
         )
@@ -41,7 +43,7 @@ class TransactionDialogValidationTest {
         val errors = validateTransaction(
             label = "Courses",
             amount = 100.0,
-            category = Category.FOOD,
+            category = foodCategory,
             date = LocalDate.now(),
             isExpense = true
         )
@@ -56,7 +58,7 @@ class TransactionDialogValidationTest {
         val errors = validateTransaction(
             label = "Test",
             amount = null,
-            category = Category.FOOD,
+            category = foodCategory,
             date = LocalDate.now(),
             isExpense = true
         )
@@ -69,7 +71,7 @@ class TransactionDialogValidationTest {
         val errors = validateTransaction(
             label = "Test",
             amount = 0.0,
-            category = Category.FOOD,
+            category = foodCategory,
             date = LocalDate.now(),
             isExpense = true
         )
@@ -82,7 +84,7 @@ class TransactionDialogValidationTest {
         val errors = validateTransaction(
             label = "Test",
             amount = -50.0,
-            category = Category.FOOD,
+            category = foodCategory,
             date = LocalDate.now(),
             isExpense = true
         )
@@ -95,7 +97,7 @@ class TransactionDialogValidationTest {
         val errors = validateTransaction(
             label = "Test",
             amount = 100.0,
-            category = Category.FOOD,
+            category = foodCategory,
             date = LocalDate.now(),
             isExpense = true
         )
@@ -123,7 +125,7 @@ class TransactionDialogValidationTest {
         val errors = validateTransaction(
             label = "Test",
             amount = 100.0,
-            category = Category.FOOD,
+            category = foodCategory,
             date = LocalDate.now(),
             isExpense = true
         )
@@ -151,7 +153,7 @@ class TransactionDialogValidationTest {
         val errors = validateTransaction(
             label = "Test",
             amount = 100.0,
-            category = Category.FOOD,
+            category = foodCategory,
             date = null,
             isExpense = true
         )
@@ -164,7 +166,7 @@ class TransactionDialogValidationTest {
         val errors = validateTransaction(
             label = "Test",
             amount = 100.0,
-            category = Category.FOOD,
+            category = foodCategory,
             date = LocalDate.now(),
             isExpense = true
         )
@@ -179,7 +181,7 @@ class TransactionDialogValidationTest {
         val errors = validateTransaction(
             label = "Courses Carrefour",
             amount = 85.50,
-            category = Category.FOOD,
+            category = foodCategory,
             date = LocalDate.of(2025, 1, 15),
             isExpense = true
         )

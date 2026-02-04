@@ -1,6 +1,6 @@
 package com.pecule.app.domain
 
-import com.pecule.app.data.local.database.entity.Category
+import com.pecule.app.data.local.database.entity.CategoryEntity
 import java.time.LocalDate
 
 data class Transaction(
@@ -10,5 +10,5 @@ data class Transaction(
     val date: LocalDate,
     val isExpense: Boolean,
     val isFixed: Boolean,
-    val category: Category?
+    val category: CategoryEntity?
 )

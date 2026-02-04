@@ -1,10 +1,11 @@
 package com.pecule.app.ui.components
 
-import com.pecule.app.data.local.database.entity.Category
+import com.pecule.app.data.local.database.entity.CategoryEntity
 import com.pecule.app.data.local.database.entity.Expense
 import com.pecule.app.data.local.database.entity.Income
 import com.pecule.app.data.repository.IExpenseRepository
 import com.pecule.app.data.repository.IIncomeRepository
+import com.pecule.app.domain.CategoryInitializer
 import com.pecule.app.domain.Transaction
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -32,6 +33,11 @@ class AddTransactionViewModelTest {
     private lateinit var fakeExpenseRepository: FakeExpenseRepositoryForDialog
     private lateinit var fakeIncomeRepository: FakeIncomeRepositoryForDialog
     private lateinit var viewModel: AddTransactionViewModel
+
+    // Category helpers
+    private val foodCategory = CategoryInitializer.DEFAULT_CATEGORIES.find { it.name == "Alimentation" }!!
+    private val transportCategory = CategoryInitializer.DEFAULT_CATEGORIES.find { it.name == "Transport" }!!
+    private val otherCategory = CategoryInitializer.DEFAULT_CATEGORIES.find { it.name == "Autre" }!!
 
     @Before
     fun setup() {
@@ -163,7 +169,7 @@ class AddTransactionViewModelTest {
             existingTransaction = null
         )
 
-        viewModel.updateCategory(Category.FOOD)
+        viewModel.updateCategory(foodCategory)
         testDispatcher.scheduler.advanceUntilIdle()
 
         assertNull(viewModel.uiState.first().category)
@@ -180,7 +186,7 @@ class AddTransactionViewModelTest {
             date = LocalDate.of(2025, 1, 10),
             isExpense = true,
             isFixed = true,
-            category = Category.FOOD
+            category = foodCategory
         )
 
         viewModel = AddTransactionViewModel(
@@ -196,7 +202,7 @@ class AddTransactionViewModelTest {
         assertEquals(75.50, state.amount)
         assertEquals(LocalDate.of(2025, 1, 10), state.date)
         assertTrue(state.isFixed)
-        assertEquals(Category.FOOD, state.category)
+        assertEquals(foodCategory, state.category)
     }
 
     @Test
@@ -208,7 +214,7 @@ class AddTransactionViewModelTest {
             date = LocalDate.now(),
             isExpense = true,
             isFixed = false,
-            category = Category.OTHER
+            category = otherCategory
         )
 
         viewModel = AddTransactionViewModel(
@@ -266,10 +272,10 @@ class AddTransactionViewModelTest {
             existingTransaction = null
         )
 
-        viewModel.updateCategory(Category.TRANSPORT)
+        viewModel.updateCategory(transportCategory)
         testDispatcher.scheduler.advanceUntilIdle()
 
-        assertEquals(Category.TRANSPORT, viewModel.uiState.first().category)
+        assertEquals(transportCategory, viewModel.uiState.first().category)
     }
 
     @Test
@@ -374,7 +380,7 @@ class AddTransactionViewModelTest {
 
         viewModel.updateLabel("Courses")
         viewModel.updateAmount(85.50)
-        viewModel.updateCategory(Category.FOOD)
+        viewModel.updateCategory(foodCategory)
         viewModel.updateDate(LocalDate.of(2025, 1, 20))
         testDispatcher.scheduler.advanceUntilIdle()
 
@@ -387,7 +393,7 @@ class AddTransactionViewModelTest {
         val insertedExpense = fakeExpenseRepository.getInsertedExpenses().first()
         assertEquals("Courses", insertedExpense.label)
         assertEquals(85.50, insertedExpense.amount, 0.001)
-        assertEquals(Category.FOOD, insertedExpense.category)
+        assertEquals(foodCategory.id, insertedExpense.categoryId)
     }
 
     @Test
@@ -426,7 +432,7 @@ class AddTransactionViewModelTest {
             date = LocalDate.of(2025, 1, 10),
             isExpense = true,
             isFixed = false,
-            category = Category.OTHER
+            category = otherCategory
         )
 
         viewModel = AddTransactionViewModel(

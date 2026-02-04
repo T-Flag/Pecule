@@ -1,6 +1,5 @@
 package com.pecule.app.ui.components
 
-import com.pecule.app.data.local.database.entity.Category
 import com.pecule.app.data.local.database.entity.Expense
 import com.pecule.app.data.local.database.entity.Income
 import com.pecule.app.ui.screens.dashboard.FakeExpenseRepository
@@ -19,6 +18,10 @@ class DeleteConfirmationTest {
     private lateinit var incomeRepository: FakeIncomeRepository
     private lateinit var deleteHandler: DeleteHandler
 
+    // Category IDs from CategoryInitializer
+    private val foodCategoryId = 2L
+    private val transportCategoryId = 3L
+
     @Before
     fun setup() {
         expenseRepository = FakeExpenseRepository()
@@ -28,11 +31,11 @@ class DeleteConfirmationTest {
 
     @Test
     fun `deleteExpense calls expenseRepository delete`() = runTest {
-        // Given: une dépense existante
+        // Given: une depense existante
         val expense = Expense(
             id = 1,
             cycleId = 1,
-            category = Category.FOOD,
+            categoryId = foodCategoryId,
             label = "Courses",
             amount = 50.0,
             date = LocalDate.of(2025, 1, 15),
@@ -40,10 +43,10 @@ class DeleteConfirmationTest {
         )
         expenseRepository.setExpenses(listOf(expense))
 
-        // When: on supprime la dépense
+        // When: on supprime la depense
         deleteHandler.deleteExpense(expense)
 
-        // Then: la dépense n'existe plus
+        // Then: la depense n'existe plus
         val remainingExpenses = expenseRepository.getByCycleId(1).first()
         assertTrue(remainingExpenses.isEmpty())
     }
@@ -71,11 +74,11 @@ class DeleteConfirmationTest {
 
     @Test
     fun `after deleting expense the list is updated`() = runTest {
-        // Given: plusieurs dépenses
+        // Given: plusieurs depenses
         val expense1 = Expense(
             id = 1,
             cycleId = 1,
-            category = Category.FOOD,
+            categoryId = foodCategoryId,
             label = "Courses",
             amount = 50.0,
             date = LocalDate.of(2025, 1, 15),
@@ -84,7 +87,7 @@ class DeleteConfirmationTest {
         val expense2 = Expense(
             id = 2,
             cycleId = 1,
-            category = Category.TRANSPORT,
+            categoryId = transportCategoryId,
             label = "Essence",
             amount = 60.0,
             date = LocalDate.of(2025, 1, 16),
@@ -92,10 +95,10 @@ class DeleteConfirmationTest {
         )
         expenseRepository.setExpenses(listOf(expense1, expense2))
 
-        // When: on supprime une dépense
+        // When: on supprime une depense
         deleteHandler.deleteExpense(expense1)
 
-        // Then: seule la dépense restante est dans la liste
+        // Then: seule la depense restante est dans la liste
         val remainingExpenses = expenseRepository.getByCycleId(1).first()
         assertEquals(1, remainingExpenses.size)
         assertEquals(expense2.id, remainingExpenses.first().id)

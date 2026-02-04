@@ -1,9 +1,9 @@
 package com.pecule.app.ui.screens.budget
 
 import com.pecule.app.data.local.database.entity.BudgetCycle
-import com.pecule.app.data.local.database.entity.Category
 import com.pecule.app.data.local.database.entity.Expense
 import com.pecule.app.data.local.database.entity.Income
+import com.pecule.app.domain.CategoryInitializer
 import com.pecule.app.domain.Transaction
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -29,7 +29,13 @@ class BudgetSwipeEditTest {
     private lateinit var fakeBudgetCycleRepository: FakeBudgetCycleRepositoryForBudget
     private lateinit var fakeExpenseRepository: FakeExpenseRepositoryForBudget
     private lateinit var fakeIncomeRepository: FakeIncomeRepositoryForBudget
+    private lateinit var fakeCategoryRepository: FakeCategoryRepositoryForBudget
     private lateinit var viewModel: BudgetViewModel
+
+    // Category IDs and entities from CategoryInitializer
+    private val foodCategoryId = 2L
+    private val transportCategoryId = 3L
+    private val transportCategory = CategoryInitializer.DEFAULT_CATEGORIES.find { it.name == "Transport" }
 
     @Before
     fun setup() {
@@ -37,6 +43,7 @@ class BudgetSwipeEditTest {
         fakeBudgetCycleRepository = FakeBudgetCycleRepositoryForBudget()
         fakeExpenseRepository = FakeExpenseRepositoryForBudget()
         fakeIncomeRepository = FakeIncomeRepositoryForBudget()
+        fakeCategoryRepository = FakeCategoryRepositoryForBudget()
     }
 
     @After
@@ -48,7 +55,8 @@ class BudgetSwipeEditTest {
         return BudgetViewModel(
             budgetCycleRepository = fakeBudgetCycleRepository,
             expenseRepository = fakeExpenseRepository,
-            incomeRepository = fakeIncomeRepository
+            incomeRepository = fakeIncomeRepository,
+            categoryRepository = fakeCategoryRepository
         )
     }
 
@@ -56,14 +64,14 @@ class BudgetSwipeEditTest {
 
     @Test
     fun `swipe right on expense opens edit dialog with expense data`() = runTest(testDispatcher) {
-        // Given: un cycle avec une dépense
+        // Given: un cycle avec une depense
         fakeBudgetCycleRepository.setCurrentCycle(
             BudgetCycle(id = 1, amount = 2500.0, startDate = LocalDate.of(2025, 1, 25), endDate = null)
         )
         val expenseToEdit = Expense(
             id = 1,
             cycleId = 1,
-            category = Category.FOOD,
+            categoryId = foodCategoryId,
             label = "Courses",
             amount = 50.0,
             date = LocalDate.of(2025, 1, 27),
@@ -98,7 +106,7 @@ class BudgetSwipeEditTest {
         val expense = Expense(
             id = 42,
             cycleId = 1,
-            category = Category.TRANSPORT,
+            categoryId = transportCategoryId,
             label = "Essence",
             amount = 75.50,
             date = LocalDate.of(2025, 1, 28),
@@ -113,7 +121,7 @@ class BudgetSwipeEditTest {
             date = expense.date,
             isExpense = true,
             isFixed = expense.isFixed,
-            category = expense.category
+            category = transportCategory
         )
 
         // Then: all fields are preserved
@@ -123,7 +131,7 @@ class BudgetSwipeEditTest {
         assertEquals(LocalDate.of(2025, 1, 28), transaction.date)
         assertTrue(transaction.isExpense)
         assertTrue(transaction.isFixed)
-        assertEquals(Category.TRANSPORT, transaction.category)
+        assertEquals(transportCategory, transaction.category)
     }
 
     @Test
@@ -135,7 +143,7 @@ class BudgetSwipeEditTest {
         val originalExpense = Expense(
             id = 1,
             cycleId = 1,
-            category = Category.FOOD,
+            categoryId = foodCategoryId,
             label = "Courses",
             amount = 50.0,
             date = LocalDate.of(2025, 1, 27),
@@ -240,7 +248,7 @@ class BudgetSwipeEditTest {
         val expense = Expense(
             id = 1,
             cycleId = 1,
-            category = Category.FOOD,
+            categoryId = foodCategoryId,
             label = "Courses",
             amount = 50.0,
             date = LocalDate.of(2025, 1, 27),

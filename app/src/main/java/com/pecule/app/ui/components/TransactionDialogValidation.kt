@@ -1,12 +1,12 @@
 package com.pecule.app.ui.components
 
-import com.pecule.app.data.local.database.entity.Category
+import com.pecule.app.data.local.database.entity.CategoryEntity
 import java.time.LocalDate
 
 fun validateTransaction(
     label: String,
     amount: Double?,
-    category: Category?,
+    category: CategoryEntity?,
     date: LocalDate?,
     isExpense: Boolean
 ): List<String> {

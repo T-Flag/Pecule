@@ -19,30 +19,21 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.pecule.app.data.local.database.entity.Category
+import com.pecule.app.data.local.database.entity.CategoryEntity
+import com.pecule.app.domain.CategoryInitializer
 import com.pecule.app.ui.theme.PeculeTheme
 import java.text.NumberFormat
 import java.util.Locale
 
 object CategoryColors {
-    val colors = mapOf(
-        Category.SALARY to Color(0xFF4CAF50),
-        Category.FOOD to Color(0xFFFF9800),
-        Category.TRANSPORT to Color(0xFF2196F3),
-        Category.HOUSING to Color(0xFF9C27B0),
-        Category.UTILITIES to Color(0xFFFFEB3B),
-        Category.ENTERTAINMENT to Color(0xFFE91E63),
-        Category.HEALTH to Color(0xFF00BCD4),
-        Category.SHOPPING to Color(0xFFFF5722),
-        Category.OTHER to Color(0xFF607D8B)
-    )
-
-    fun getColor(category: Category): Color = colors[category] ?: Color.Gray
+    fun getColor(category: CategoryEntity): Color {
+        return Color(category.color)
+    }
 }
 
 @Composable
 fun DonutChart(
-    data: Map<Category, Double>,
+    data: Map<CategoryEntity, Double>,
     modifier: Modifier = Modifier,
     size: Dp = 200.dp,
     strokeWidth: Dp = 32.dp
@@ -107,14 +98,15 @@ fun DonutChart(
 @Preview(showBackground = true)
 @Composable
 private fun DonutChartPreview() {
+    val categories = CategoryInitializer.DEFAULT_CATEGORIES
     PeculeTheme {
         DonutChart(
             data = mapOf(
-                Category.FOOD to 250.0,
-                Category.TRANSPORT to 100.0,
-                Category.HOUSING to 800.0,
-                Category.UTILITIES to 150.0,
-                Category.ENTERTAINMENT to 75.0
+                categories[1] to 250.0,  // Alimentation
+                categories[2] to 100.0,  // Transport
+                categories[3] to 800.0,  // Logement
+                categories[4] to 150.0,  // Factures
+                categories[5] to 75.0    // Loisirs
             )
         )
     }
@@ -131,9 +123,10 @@ private fun DonutChartEmptyPreview() {
 @Preview(showBackground = true)
 @Composable
 private fun DonutChartSingleCategoryPreview() {
+    val housingCategory = CategoryInitializer.DEFAULT_CATEGORIES.find { it.name == "Logement" }!!
     PeculeTheme {
         DonutChart(
-            data = mapOf(Category.HOUSING to 1000.0)
+            data = mapOf(housingCategory to 1000.0)
         )
     }
 }

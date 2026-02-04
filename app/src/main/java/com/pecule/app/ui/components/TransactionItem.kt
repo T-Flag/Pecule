@@ -33,7 +33,8 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.pecule.app.data.local.database.entity.Category
+import com.pecule.app.data.local.database.entity.CategoryEntity
+import com.pecule.app.domain.CategoryInitializer
 import com.pecule.app.domain.Transaction
 import com.pecule.app.ui.theme.PeculeTheme
 import java.text.NumberFormat
@@ -70,7 +71,7 @@ fun TransactionItem(
         ) {
             Icon(
                 imageVector = icon,
-                contentDescription = transaction.category?.label ?: "Revenu",
+                contentDescription = transaction.category?.name ?: "Revenu",
                 tint = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.size(24.dp)
             )
@@ -103,20 +104,20 @@ fun TransactionItem(
     }
 }
 
-private fun getCategoryIcon(category: Category?, isExpense: Boolean): ImageVector {
+private fun getCategoryIcon(category: CategoryEntity?, isExpense: Boolean): ImageVector {
     if (!isExpense) {
         return Icons.Filled.AddCircle
     }
-    return when (category) {
-        Category.SALARY -> Icons.Filled.Payments
-        Category.FOOD -> Icons.Filled.Restaurant
-        Category.TRANSPORT -> Icons.Filled.DirectionsCar
-        Category.HOUSING -> Icons.Filled.Home
-        Category.UTILITIES -> Icons.Filled.Receipt
-        Category.ENTERTAINMENT -> Icons.Filled.SportsEsports
-        Category.HEALTH -> Icons.Filled.MedicalServices
-        Category.SHOPPING -> Icons.Filled.ShoppingBag
-        Category.OTHER, null -> Icons.Filled.MoreHoriz
+    return when (category?.icon) {
+        "payments" -> Icons.Filled.Payments
+        "restaurant" -> Icons.Filled.Restaurant
+        "directions_car" -> Icons.Filled.DirectionsCar
+        "home" -> Icons.Filled.Home
+        "receipt_long" -> Icons.Filled.Receipt
+        "sports_esports" -> Icons.Filled.SportsEsports
+        "medical_services" -> Icons.Filled.MedicalServices
+        "shopping_bag" -> Icons.Filled.ShoppingBag
+        else -> Icons.Filled.MoreHoriz
     }
 }
 
@@ -133,6 +134,7 @@ private fun formatAmount(amount: Double): String {
 @Preview(showBackground = true)
 @Composable
 private fun TransactionItemExpensePreview() {
+    val foodCategory = CategoryInitializer.DEFAULT_CATEGORIES.find { it.name == "Alimentation" }
     PeculeTheme {
         TransactionItem(
             transaction = Transaction(
@@ -142,7 +144,7 @@ private fun TransactionItemExpensePreview() {
                 date = LocalDate.of(2025, 1, 15),
                 isExpense = true,
                 isFixed = false,
-                category = Category.FOOD
+                category = foodCategory
             ),
             modifier = Modifier.padding(horizontal = 16.dp)
         )
@@ -171,6 +173,7 @@ private fun TransactionItemIncomePreview() {
 @Preview(showBackground = true, uiMode = android.content.res.Configuration.UI_MODE_NIGHT_YES)
 @Composable
 private fun TransactionItemDarkPreview() {
+    val entertainmentCategory = CategoryInitializer.DEFAULT_CATEGORIES.find { it.name == "Loisirs" }
     PeculeTheme(darkTheme = true) {
         TransactionItem(
             transaction = Transaction(
@@ -180,7 +183,7 @@ private fun TransactionItemDarkPreview() {
                 date = LocalDate.of(2025, 1, 18),
                 isExpense = true,
                 isFixed = false,
-                category = Category.ENTERTAINMENT
+                category = entertainmentCategory
             ),
             modifier = Modifier.padding(horizontal = 16.dp)
         )

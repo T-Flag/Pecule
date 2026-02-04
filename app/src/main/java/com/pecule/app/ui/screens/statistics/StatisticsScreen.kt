@@ -35,11 +35,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.pecule.app.data.local.database.entity.BudgetCycle
-import com.pecule.app.data.local.database.entity.Category
+import com.pecule.app.data.local.database.entity.CategoryEntity
 import com.pecule.app.ui.components.CategoryColors
 import com.pecule.app.ui.components.DonutChart
 import java.text.NumberFormat
@@ -74,7 +75,7 @@ fun StatisticsScreen(
 private fun StatisticsContent(
     cycles: List<BudgetCycle>,
     selectedCycle: BudgetCycle?,
-    expensesByCategory: Map<Category, Double>,
+    expensesByCategory: Map<CategoryEntity, Double>,
     totalExpenses: Double,
     totalIncomes: Double,
     balance: Double,
@@ -195,7 +196,7 @@ private fun CycleSelector(
 
 @Composable
 private fun CategoryLegend(
-    expensesByCategory: Map<Category, Double>,
+    expensesByCategory: Map<CategoryEntity, Double>,
     totalExpenses: Double,
     modifier: Modifier = Modifier
 ) {
@@ -230,7 +231,7 @@ private fun CategoryLegend(
                     Spacer(modifier = Modifier.width(12.dp))
 
                     Text(
-                        text = category.label,
+                        text = category.name,
                         style = MaterialTheme.typography.bodyMedium,
                         modifier = Modifier.weight(1f)
                     )
@@ -326,7 +327,7 @@ private fun SummaryCard(
 private fun SummaryRow(
     label: String,
     value: String,
-    valueColor: androidx.compose.ui.graphics.Color,
+    valueColor: Color,
     isBold: Boolean = false,
     modifier: Modifier = Modifier
 ) {

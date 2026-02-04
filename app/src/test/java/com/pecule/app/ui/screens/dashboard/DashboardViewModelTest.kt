@@ -1,14 +1,19 @@
 package com.pecule.app.ui.screens.dashboard
 
 import com.pecule.app.data.local.database.entity.BudgetCycle
-import com.pecule.app.data.local.database.entity.Category
+import com.pecule.app.data.local.database.entity.CategoryEntity
 import com.pecule.app.data.local.database.entity.Expense
 import com.pecule.app.data.local.database.entity.Income
+import com.pecule.app.data.repository.ICategoryRepository
 import com.pecule.app.domain.BalanceCalculator
+import com.pecule.app.domain.CategoryInitializer
 import com.pecule.app.ui.screens.onboarding.FakeBudgetCycleRepository
 import com.pecule.app.ui.screens.onboarding.FakeUserPreferencesRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
@@ -31,8 +36,14 @@ class DashboardViewModelTest {
     private lateinit var fakeBudgetCycleRepository: FakeBudgetCycleRepository
     private lateinit var fakeExpenseRepository: FakeExpenseRepository
     private lateinit var fakeIncomeRepository: FakeIncomeRepository
+    private lateinit var fakeCategoryRepository: FakeCategoryRepository
     private lateinit var balanceCalculator: BalanceCalculator
     private lateinit var viewModel: DashboardViewModel
+
+    // Category IDs from CategoryInitializer
+    private val foodCategoryId = 2L
+    private val housingCategoryId = 4L
+    private val utilitiesCategoryId = 5L
 
     @Before
     fun setup() {
@@ -41,6 +52,7 @@ class DashboardViewModelTest {
         fakeBudgetCycleRepository = FakeBudgetCycleRepository()
         fakeExpenseRepository = FakeExpenseRepository()
         fakeIncomeRepository = FakeIncomeRepository()
+        fakeCategoryRepository = FakeCategoryRepository()
         balanceCalculator = BalanceCalculator()
     }
 
@@ -55,6 +67,7 @@ class DashboardViewModelTest {
             budgetCycleRepository = fakeBudgetCycleRepository,
             expenseRepository = fakeExpenseRepository,
             incomeRepository = fakeIncomeRepository,
+            categoryRepository = fakeCategoryRepository,
             balanceCalculator = balanceCalculator
         )
     }
@@ -83,7 +96,7 @@ class DashboardViewModelTest {
             BudgetCycle(amount = 2500.0, startDate = LocalDate.of(2025, 1, 25), endDate = null)
         )
         fakeExpenseRepository.setExpenses(listOf(
-            Expense(id = 1, cycleId = 1, category = Category.FOOD, label = "Courses", amount = 300.0, date = LocalDate.of(2025, 1, 26))
+            Expense(id = 1, cycleId = 1, categoryId = foodCategoryId, label = "Courses", amount = 300.0, date = LocalDate.of(2025, 1, 26))
         ))
         fakeIncomeRepository.setIncomes(listOf(
             Income(id = 1, cycleId = 1, label = "Prime", amount = 100.0, date = LocalDate.of(2025, 1, 26))
@@ -108,7 +121,7 @@ class DashboardViewModelTest {
             BudgetCycle(amount = 2000.0, startDate = LocalDate.of(2025, 1, 25), endDate = null)
         )
         fakeExpenseRepository.setExpenses(listOf(
-            Expense(id = 1, cycleId = 1, category = Category.FOOD, label = "Courses", amount = 500.0, date = LocalDate.of(2025, 1, 26))
+            Expense(id = 1, cycleId = 1, categoryId = foodCategoryId, label = "Courses", amount = 500.0, date = LocalDate.of(2025, 1, 26))
         ))
         fakeIncomeRepository.setIncomes(emptyList())
 
@@ -137,7 +150,7 @@ class DashboardViewModelTest {
             Expense(
                 id = i.toLong(),
                 cycleId = 1,
-                category = Category.FOOD,
+                categoryId = foodCategoryId,
                 label = "Expense $i",
                 amount = 100.0,
                 date = LocalDate.of(2025, 1, 20 + i),
@@ -167,9 +180,9 @@ class DashboardViewModelTest {
             BudgetCycle(amount = 3000.0, startDate = LocalDate.of(2025, 1, 25), endDate = null)
         )
         fakeExpenseRepository.setExpenses(listOf(
-            Expense(id = 1, cycleId = 1, category = Category.HOUSING, label = "Loyer", amount = 800.0, date = LocalDate.of(2025, 1, 26), isFixed = true),
-            Expense(id = 2, cycleId = 1, category = Category.FOOD, label = "Courses", amount = 50.0, date = LocalDate.of(2025, 1, 27), isFixed = false),
-            Expense(id = 3, cycleId = 1, category = Category.UTILITIES, label = "Internet", amount = 30.0, date = LocalDate.of(2025, 1, 26), isFixed = true)
+            Expense(id = 1, cycleId = 1, categoryId = housingCategoryId, label = "Loyer", amount = 800.0, date = LocalDate.of(2025, 1, 26), isFixed = true),
+            Expense(id = 2, cycleId = 1, categoryId = foodCategoryId, label = "Courses", amount = 50.0, date = LocalDate.of(2025, 1, 27), isFixed = false),
+            Expense(id = 3, cycleId = 1, categoryId = utilitiesCategoryId, label = "Internet", amount = 30.0, date = LocalDate.of(2025, 1, 26), isFixed = true)
         ))
         fakeIncomeRepository.setIncomes(listOf(
             Income(id = 1, cycleId = 1, label = "Pension", amount = 200.0, date = LocalDate.of(2025, 1, 26), isFixed = true),
@@ -197,9 +210,9 @@ class DashboardViewModelTest {
             BudgetCycle(amount = 3000.0, startDate = LocalDate.of(2025, 1, 20), endDate = null)
         )
         fakeExpenseRepository.setExpenses(listOf(
-            Expense(id = 1, cycleId = 1, category = Category.FOOD, label = "Old", amount = 10.0, date = LocalDate.of(2025, 1, 21), isFixed = false),
-            Expense(id = 2, cycleId = 1, category = Category.FOOD, label = "New", amount = 20.0, date = LocalDate.of(2025, 1, 25), isFixed = false),
-            Expense(id = 3, cycleId = 1, category = Category.FOOD, label = "Middle", amount = 30.0, date = LocalDate.of(2025, 1, 23), isFixed = false)
+            Expense(id = 1, cycleId = 1, categoryId = foodCategoryId, label = "Old", amount = 10.0, date = LocalDate.of(2025, 1, 21), isFixed = false),
+            Expense(id = 2, cycleId = 1, categoryId = foodCategoryId, label = "New", amount = 20.0, date = LocalDate.of(2025, 1, 25), isFixed = false),
+            Expense(id = 3, cycleId = 1, categoryId = foodCategoryId, label = "Middle", amount = 30.0, date = LocalDate.of(2025, 1, 23), isFixed = false)
         ))
         fakeIncomeRepository.setIncomes(emptyList())
 
@@ -218,4 +231,29 @@ class DashboardViewModelTest {
         assertEquals("Old", transactions[2].label)
         job.cancel()
     }
+}
+
+// Fake Category Repository for Dashboard tests
+class FakeCategoryRepository : ICategoryRepository {
+    private val categories = MutableStateFlow(CategoryInitializer.DEFAULT_CATEGORIES)
+
+    override fun getAllCategories(): Flow<List<CategoryEntity>> = categories
+
+    override fun getDefaultCategories(): Flow<List<CategoryEntity>> = categories.map { list ->
+        list.filter { it.isDefault }
+    }
+
+    override fun getById(id: Long): Flow<CategoryEntity?> = categories.map { list ->
+        list.find { it.id == id }
+    }
+
+    override suspend fun insert(category: CategoryEntity): Long = category.id
+
+    override suspend fun insertAll(categories: List<CategoryEntity>) {}
+
+    override suspend fun update(category: CategoryEntity) {}
+
+    override suspend fun delete(category: CategoryEntity) {}
+
+    override suspend fun getCount(): Int = categories.value.size
 }

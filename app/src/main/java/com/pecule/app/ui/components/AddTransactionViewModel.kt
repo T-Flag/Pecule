@@ -1,6 +1,6 @@
 package com.pecule.app.ui.components
 
-import com.pecule.app.data.local.database.entity.Category
+import com.pecule.app.data.local.database.entity.CategoryEntity
 import com.pecule.app.data.local.database.entity.Expense
 import com.pecule.app.data.local.database.entity.Income
 import com.pecule.app.data.repository.IExpenseRepository
@@ -15,7 +15,7 @@ import java.time.LocalDate
 data class AddTransactionUiState(
     val label: String = "",
     val amount: Double? = null,
-    val category: Category? = null,
+    val category: CategoryEntity? = null,
     val date: LocalDate = LocalDate.now(),
     val isFixed: Boolean = false,
     val isExpense: Boolean = true,
@@ -64,7 +64,7 @@ class AddTransactionViewModel(
         _uiState.update { it.copy(amount = amount) }
     }
 
-    fun updateCategory(category: Category?) {
+    fun updateCategory(category: CategoryEntity?) {
         // Ignore category update for income
         if (!_uiState.value.isExpense) return
         _uiState.update { it.copy(category = category) }
@@ -106,7 +106,7 @@ class AddTransactionViewModel(
         val expense = Expense(
             id = state.transactionId ?: 0L,
             cycleId = cycleId,
-            category = state.category!!,
+            categoryId = state.category?.id,
             label = state.label,
             amount = state.amount!!,
             date = state.date,

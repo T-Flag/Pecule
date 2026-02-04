@@ -42,9 +42,10 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.pecule.app.data.local.database.entity.Category
+import com.pecule.app.data.local.database.entity.CategoryEntity
 import com.pecule.app.data.local.database.entity.Expense
 import com.pecule.app.data.local.database.entity.Income
+import com.pecule.app.domain.CategoryInitializer
 import com.pecule.app.domain.Transaction
 import com.pecule.app.ui.components.AddTransactionDialog
 import com.pecule.app.ui.components.AddTransactionUiState
@@ -69,6 +70,7 @@ fun DashboardScreen(
     val budgetPercentageUsed by viewModel.budgetPercentageUsed.collectAsStateWithLifecycle()
     val recentTransactions by viewModel.recentTransactions.collectAsStateWithLifecycle()
     val currentCycleId by viewModel.currentCycleId.collectAsStateWithLifecycle()
+    val categories by viewModel.categories.collectAsStateWithLifecycle()
 
     var showFabMenu by remember { mutableStateOf(false) }
     var showAddDialog by remember { mutableStateOf(false) }
@@ -195,6 +197,7 @@ fun DashboardScreen(
             date = uiState.date,
             isFixed = uiState.isFixed,
             errors = errors,
+            categories = categories,
             onLabelChange = { addViewModel.updateLabel(it) },
             onAmountChange = { addViewModel.updateAmount(it) },
             onCategoryChange = { addViewModel.updateCategory(it) },
@@ -354,6 +357,8 @@ private fun DashboardContent(
 @Preview(showBackground = true)
 @Composable
 private fun DashboardContentPreview() {
+    val foodCategory = CategoryInitializer.DEFAULT_CATEGORIES.find { it.name == "Alimentation" }
+    val transportCategory = CategoryInitializer.DEFAULT_CATEGORIES.find { it.name == "Transport" }
     PeculeTheme {
         DashboardContent(
             userName = "Marie",
@@ -367,7 +372,7 @@ private fun DashboardContentPreview() {
                     date = LocalDate.of(2025, 1, 28),
                     isExpense = true,
                     isFixed = false,
-                    category = Category.FOOD
+                    category = foodCategory
                 ),
                 Transaction(
                     id = 2,
@@ -385,7 +390,7 @@ private fun DashboardContentPreview() {
                     date = LocalDate.of(2025, 1, 26),
                     isExpense = true,
                     isFixed = false,
-                    category = Category.TRANSPORT
+                    category = transportCategory
                 )
             ),
             onNavigateToProfile = {}
@@ -410,6 +415,7 @@ private fun DashboardContentEmptyPreview() {
 @Preview(showBackground = true, uiMode = android.content.res.Configuration.UI_MODE_NIGHT_YES)
 @Composable
 private fun DashboardContentDarkPreview() {
+    val entertainmentCategory = CategoryInitializer.DEFAULT_CATEGORIES.find { it.name == "Loisirs" }
     PeculeTheme(darkTheme = true) {
         DashboardContent(
             userName = "Pierre",
@@ -423,7 +429,7 @@ private fun DashboardContentDarkPreview() {
                     date = LocalDate.of(2025, 1, 28),
                     isExpense = true,
                     isFixed = false,
-                    category = Category.ENTERTAINMENT
+                    category = entertainmentCategory
                 )
             ),
             onNavigateToProfile = {}

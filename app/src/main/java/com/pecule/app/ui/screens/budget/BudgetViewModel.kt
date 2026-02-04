@@ -2,9 +2,11 @@ package com.pecule.app.ui.screens.budget
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.pecule.app.data.local.database.entity.CategoryEntity
 import com.pecule.app.data.local.database.entity.Expense
 import com.pecule.app.data.local.database.entity.Income
 import com.pecule.app.data.repository.IBudgetCycleRepository
+import com.pecule.app.data.repository.ICategoryRepository
 import com.pecule.app.data.repository.IExpenseRepository
 import com.pecule.app.data.repository.IIncomeRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -25,11 +27,19 @@ import javax.inject.Inject
 class BudgetViewModel @Inject constructor(
     private val budgetCycleRepository: IBudgetCycleRepository,
     val expenseRepository: IExpenseRepository,
-    val incomeRepository: IIncomeRepository
+    val incomeRepository: IIncomeRepository,
+    val categoryRepository: ICategoryRepository
 ) : ViewModel() {
 
     private val _selectedTab = MutableStateFlow(0)
     val selectedTab: StateFlow<Int> = _selectedTab.asStateFlow()
+
+    val categories: StateFlow<List<CategoryEntity>> = categoryRepository.getAllCategories()
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = emptyList()
+        )
 
     val fixedExpenses: StateFlow<List<Expense>> = budgetCycleRepository.currentCycle
         .flatMapLatest { cycle ->
@@ -111,5 +121,9 @@ class BudgetViewModel @Inject constructor(
         viewModelScope.launch {
             incomeRepository.delete(income)
         }
+    }
+
+    fun getCategoryById(categoryId: Long?): CategoryEntity? {
+        return categoryId?.let { id -> categories.value.find { it.id == id } }
     }
 }

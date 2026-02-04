@@ -1,7 +1,6 @@
 package com.pecule.app.ui.screens.budget
 
 import com.pecule.app.data.local.database.entity.BudgetCycle
-import com.pecule.app.data.local.database.entity.Category
 import com.pecule.app.data.local.database.entity.Expense
 import com.pecule.app.data.local.database.entity.Income
 import kotlinx.coroutines.Dispatchers
@@ -27,7 +26,12 @@ class BudgetSwipeDeleteTest {
     private lateinit var fakeBudgetCycleRepository: FakeBudgetCycleRepositoryForBudget
     private lateinit var fakeExpenseRepository: FakeExpenseRepositoryForBudget
     private lateinit var fakeIncomeRepository: FakeIncomeRepositoryForBudget
+    private lateinit var fakeCategoryRepository: FakeCategoryRepositoryForBudget
     private lateinit var viewModel: BudgetViewModel
+
+    // Category IDs from CategoryInitializer
+    private val foodCategoryId = 2L
+    private val transportCategoryId = 3L
 
     @Before
     fun setup() {
@@ -35,6 +39,7 @@ class BudgetSwipeDeleteTest {
         fakeBudgetCycleRepository = FakeBudgetCycleRepositoryForBudget()
         fakeExpenseRepository = FakeExpenseRepositoryForBudget()
         fakeIncomeRepository = FakeIncomeRepositoryForBudget()
+        fakeCategoryRepository = FakeCategoryRepositoryForBudget()
     }
 
     @After
@@ -46,7 +51,8 @@ class BudgetSwipeDeleteTest {
         return BudgetViewModel(
             budgetCycleRepository = fakeBudgetCycleRepository,
             expenseRepository = fakeExpenseRepository,
-            incomeRepository = fakeIncomeRepository
+            incomeRepository = fakeIncomeRepository,
+            categoryRepository = fakeCategoryRepository
         )
     }
 
@@ -54,14 +60,14 @@ class BudgetSwipeDeleteTest {
 
     @Test
     fun `swipe on expense triggers delete when confirmed`() = runTest(testDispatcher) {
-        // Given: un cycle avec une dépense
+        // Given: un cycle avec une depense
         fakeBudgetCycleRepository.setCurrentCycle(
             BudgetCycle(id = 1, amount = 2500.0, startDate = LocalDate.of(2025, 1, 25), endDate = null)
         )
         val expenseToSwipe = Expense(
             id = 1,
             cycleId = 1,
-            category = Category.FOOD,
+            categoryId = foodCategoryId,
             label = "Courses",
             amount = 50.0,
             date = LocalDate.of(2025, 1, 27),
@@ -73,7 +79,7 @@ class BudgetSwipeDeleteTest {
         val job = launch { viewModel.variableExpenses.collect {} }
         advanceUntilIdle()
 
-        // When: swipe déclenche la suppression (après confirmation)
+        // When: swipe declenche la suppression (apres confirmation)
         var deleteConfirmed = false
         // Simulate: user swipes, dialog shows, user confirms
         deleteConfirmed = true
@@ -82,7 +88,7 @@ class BudgetSwipeDeleteTest {
         }
         advanceUntilIdle()
 
-        // Then: la dépense est supprimée
+        // Then: la depense est supprimee
         assertTrue(viewModel.variableExpenses.value.isEmpty())
 
         job.cancel()
@@ -94,8 +100,8 @@ class BudgetSwipeDeleteTest {
         fakeBudgetCycleRepository.setCurrentCycle(
             BudgetCycle(id = 1, amount = 2500.0, startDate = LocalDate.of(2025, 1, 25), endDate = null)
         )
-        val expense1 = Expense(id = 1, cycleId = 1, category = Category.FOOD, label = "Courses", amount = 50.0, date = LocalDate.of(2025, 1, 27), isFixed = false)
-        val expense2 = Expense(id = 2, cycleId = 1, category = Category.TRANSPORT, label = "Essence", amount = 60.0, date = LocalDate.of(2025, 1, 28), isFixed = false)
+        val expense1 = Expense(id = 1, cycleId = 1, categoryId = foodCategoryId, label = "Courses", amount = 50.0, date = LocalDate.of(2025, 1, 27), isFixed = false)
+        val expense2 = Expense(id = 2, cycleId = 1, categoryId = transportCategoryId, label = "Essence", amount = 60.0, date = LocalDate.of(2025, 1, 28), isFixed = false)
         fakeExpenseRepository.setExpenses(listOf(expense1, expense2))
 
         viewModel = createViewModel()
@@ -137,7 +143,7 @@ class BudgetSwipeDeleteTest {
         val job = launch { viewModel.incomes.collect {} }
         advanceUntilIdle()
 
-        // When: swipe déclenche la suppression (après confirmation)
+        // When: swipe declenche la suppression (apres confirmation)
         var deleteConfirmed = false
         deleteConfirmed = true
         if (deleteConfirmed) {
@@ -186,7 +192,7 @@ class BudgetSwipeDeleteTest {
         fakeBudgetCycleRepository.setCurrentCycle(
             BudgetCycle(id = 1, amount = 2500.0, startDate = LocalDate.of(2025, 1, 25), endDate = null)
         )
-        val expense = Expense(id = 1, cycleId = 1, category = Category.FOOD, label = "Courses", amount = 50.0, date = LocalDate.of(2025, 1, 27), isFixed = false)
+        val expense = Expense(id = 1, cycleId = 1, categoryId = foodCategoryId, label = "Courses", amount = 50.0, date = LocalDate.of(2025, 1, 27), isFixed = false)
         fakeExpenseRepository.setExpenses(listOf(expense))
 
         viewModel = createViewModel()

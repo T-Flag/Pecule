@@ -14,15 +14,21 @@ import java.time.LocalDate
             parentColumns = ["id"],
             childColumns = ["cycleId"],
             onDelete = ForeignKey.CASCADE
+        ),
+        ForeignKey(
+            entity = CategoryEntity::class,
+            parentColumns = ["id"],
+            childColumns = ["categoryId"],
+            onDelete = ForeignKey.SET_NULL
         )
     ],
-    indices = [Index(value = ["cycleId"])]
+    indices = [Index(value = ["cycleId"]), Index(value = ["categoryId"])]
 )
 data class Expense(
     @PrimaryKey(autoGenerate = true)
     val id: Long = 0,
     val cycleId: Long,
-    val category: Category,
+    val categoryId: Long?,
     val label: String,
     val amount: Double,
     val date: LocalDate,

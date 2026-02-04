@@ -50,7 +50,7 @@ class CycleManager @Inject constructor(
             val duplicatedExpense = Expense(
                 id = 0,
                 cycleId = newCycleId,
-                category = expense.category,
+                categoryId = expense.categoryId,
                 label = expense.label,
                 amount = expense.amount,
                 date = newDate,

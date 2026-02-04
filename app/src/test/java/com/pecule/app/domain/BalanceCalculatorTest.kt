@@ -1,7 +1,6 @@
 package com.pecule.app.domain
 
 import com.pecule.app.data.local.database.entity.BudgetCycle
-import com.pecule.app.data.local.database.entity.Category
 import com.pecule.app.data.local.database.entity.Expense
 import com.pecule.app.data.local.database.entity.Income
 import org.junit.Assert.assertEquals
@@ -12,6 +11,12 @@ import java.time.LocalDate
 class BalanceCalculatorTest {
 
     private lateinit var calculator: BalanceCalculator
+
+    // Category IDs from CategoryInitializer.DEFAULT_CATEGORIES
+    private val foodCategoryId = 2L
+    private val transportCategoryId = 3L
+    private val entertainmentCategoryId = 6L
+    private val shoppingCategoryId = 8L
 
     @Before
     fun setup() {
@@ -47,9 +52,9 @@ class BalanceCalculatorTest {
             endDate = null
         )
         val expenses = listOf(
-            Expense(id = 1, cycleId = 1, category = Category.FOOD, label = "Courses", amount = 100.0, date = LocalDate.of(2025, 1, 26)),
-            Expense(id = 2, cycleId = 1, category = Category.TRANSPORT, label = "Essence", amount = 50.0, date = LocalDate.of(2025, 1, 27)),
-            Expense(id = 3, cycleId = 1, category = Category.ENTERTAINMENT, label = "Cinéma", amount = 200.0, date = LocalDate.of(2025, 1, 28))
+            Expense(id = 1, cycleId = 1, categoryId = foodCategoryId, label = "Courses", amount = 100.0, date = LocalDate.of(2025, 1, 26)),
+            Expense(id = 2, cycleId = 1, categoryId = transportCategoryId, label = "Essence", amount = 50.0, date = LocalDate.of(2025, 1, 27)),
+            Expense(id = 3, cycleId = 1, categoryId = entertainmentCategoryId, label = "Cinema", amount = 200.0, date = LocalDate.of(2025, 1, 28))
         )
         val incomes = emptyList<Income>()
 
@@ -92,7 +97,7 @@ class BalanceCalculatorTest {
             endDate = null
         )
         val expenses = listOf(
-            Expense(id = 1, cycleId = 1, category = Category.SHOPPING, label = "Vêtements", amount = 500.0, date = LocalDate.of(2025, 1, 26))
+            Expense(id = 1, cycleId = 1, categoryId = shoppingCategoryId, label = "Vetements", amount = 500.0, date = LocalDate.of(2025, 1, 26))
         )
         val incomes = listOf(
             Income(id = 1, cycleId = 1, label = "Vente", amount = 200.0, date = LocalDate.of(2025, 1, 27))
@@ -115,7 +120,7 @@ class BalanceCalculatorTest {
             endDate = null
         )
         val expenses = listOf(
-            Expense(id = 1, cycleId = 1, category = Category.FOOD, label = "Courses", amount = 1000.0, date = LocalDate.of(2025, 1, 26))
+            Expense(id = 1, cycleId = 1, categoryId = foodCategoryId, label = "Courses", amount = 1000.0, date = LocalDate.of(2025, 1, 26))
         )
         val incomes = listOf(
             Income(id = 1, cycleId = 1, label = "Prime", amount = 500.0, date = LocalDate.of(2025, 1, 26))
@@ -138,7 +143,7 @@ class BalanceCalculatorTest {
             endDate = null
         )
         val expenses = listOf(
-            Expense(id = 1, cycleId = 1, category = Category.SHOPPING, label = "Achat", amount = 1500.0, date = LocalDate.of(2025, 1, 26))
+            Expense(id = 1, cycleId = 1, categoryId = shoppingCategoryId, label = "Achat", amount = 1500.0, date = LocalDate.of(2025, 1, 26))
         )
         val incomes = emptyList<Income>()
 

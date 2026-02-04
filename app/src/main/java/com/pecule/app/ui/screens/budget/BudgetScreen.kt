@@ -34,9 +34,10 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.pecule.app.data.local.database.entity.Category
+import com.pecule.app.data.local.database.entity.CategoryEntity
 import com.pecule.app.data.local.database.entity.Expense
 import com.pecule.app.data.local.database.entity.Income
+import com.pecule.app.domain.CategoryInitializer
 import com.pecule.app.domain.Transaction
 import com.pecule.app.ui.components.AddTransactionDialog
 import com.pecule.app.ui.components.AddTransactionUiState
@@ -64,6 +65,7 @@ fun BudgetScreen(
     val totalFixed by viewModel.totalFixed.collectAsStateWithLifecycle()
     val totalVariable by viewModel.totalVariable.collectAsStateWithLifecycle()
     val totalIncomes by viewModel.totalIncomes.collectAsStateWithLifecycle()
+    val categories by viewModel.categories.collectAsStateWithLifecycle()
 
     var showAddDialog by remember { mutableStateOf(false) }
     var editingTransaction by remember { mutableStateOf<Transaction?>(null) }
@@ -87,6 +89,28 @@ fun BudgetScreen(
         1 -> "Aucune dépense variable"
         else -> "Aucun revenu"
     }
+
+    // Helper to convert Expense to Transaction
+    fun Expense.toTransaction(): Transaction = Transaction(
+        id = id,
+        label = label,
+        amount = amount,
+        date = date,
+        isExpense = true,
+        isFixed = isFixed,
+        category = viewModel.getCategoryById(categoryId)
+    )
+
+    // Helper to convert Income to Transaction
+    fun Income.toTransaction(): Transaction = Transaction(
+        id = id,
+        label = label,
+        amount = amount,
+        date = date,
+        isExpense = false,
+        isFixed = isFixed,
+        category = null
+    )
 
     Scaffold(
         modifier = modifier,
@@ -146,6 +170,7 @@ fun BudgetScreen(
                     expenses = fixedExpenses,
                     emptyMessage = emptyMessage,
                     contextMenuExpense = contextMenuExpense,
+                    categories = categories,
                     onContextMenuOpen = { contextMenuExpense = it },
                     onContextMenuDismiss = { contextMenuExpense = null },
                     onEdit = { expense ->
@@ -156,12 +181,14 @@ fun BudgetScreen(
                     onDelete = { expense ->
                         contextMenuExpense = null
                         expenseToDelete = expense
-                    }
+                    },
+                    getCategoryById = viewModel::getCategoryById
                 )
                 1 -> ExpenseList(
                     expenses = variableExpenses,
                     emptyMessage = emptyMessage,
                     contextMenuExpense = contextMenuExpense,
+                    categories = categories,
                     onContextMenuOpen = { contextMenuExpense = it },
                     onContextMenuDismiss = { contextMenuExpense = null },
                     onEdit = { expense ->
@@ -172,7 +199,8 @@ fun BudgetScreen(
                     onDelete = { expense ->
                         contextMenuExpense = null
                         expenseToDelete = expense
-                    }
+                    },
+                    getCategoryById = viewModel::getCategoryById
                 )
                 2 -> IncomeList(
                     incomes = incomes,
@@ -204,6 +232,7 @@ fun BudgetScreen(
             isExpense = isExpense,
             isFixed = isFixed,
             existingTransaction = editingTransaction,
+            categories = categories,
             onDismiss = {
                 showAddDialog = false
                 editingTransaction = null
@@ -250,6 +279,7 @@ private fun AddTransactionDialogWrapper(
     isExpense: Boolean,
     isFixed: Boolean,
     existingTransaction: Transaction?,
+    categories: List<CategoryEntity>,
     onDismiss: () -> Unit,
     onSaveSuccess: () -> Unit
 ) {
@@ -298,6 +328,7 @@ private fun AddTransactionDialogWrapper(
         date = uiState.date,
         isFixed = uiState.isFixed,
         errors = errors,
+        categories = categories,
         onLabelChange = { addViewModel.updateLabel(it) },
         onAmountChange = { addViewModel.updateAmount(it) },
         onCategoryChange = { addViewModel.updateCategory(it) },
@@ -323,10 +354,12 @@ private fun ExpenseList(
     expenses: List<Expense>,
     emptyMessage: String,
     contextMenuExpense: Expense?,
+    categories: List<CategoryEntity>,
     onContextMenuOpen: (Expense) -> Unit,
     onContextMenuDismiss: () -> Unit,
     onEdit: (Expense) -> Unit,
-    onDelete: (Expense) -> Unit
+    onDelete: (Expense) -> Unit,
+    getCategoryById: (Long?) -> CategoryEntity?
 ) {
     if (expenses.isEmpty()) {
         Box(
@@ -349,14 +382,23 @@ private fun ExpenseList(
                 items = expenses,
                 key = { it.id }
             ) { expense ->
+                val transaction = Transaction(
+                    id = expense.id,
+                    label = expense.label,
+                    amount = expense.amount,
+                    date = expense.date,
+                    isExpense = true,
+                    isFixed = expense.isFixed,
+                    category = getCategoryById(expense.categoryId)
+                )
                 SwipeableTransactionItem(
-                    transaction = expense.toTransaction(),
+                    transaction = transaction,
                     onSwipeToDelete = { onDelete(expense) },
                     onSwipeToEdit = { onEdit(expense) }
                 ) {
                     Box {
                         TransactionItem(
-                            transaction = expense.toTransaction(),
+                            transaction = transaction,
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .combinedClickable(
@@ -418,14 +460,23 @@ private fun IncomeList(
                 items = incomes,
                 key = { it.id }
             ) { income ->
+                val transaction = Transaction(
+                    id = income.id,
+                    label = income.label,
+                    amount = income.amount,
+                    date = income.date,
+                    isExpense = false,
+                    isFixed = income.isFixed,
+                    category = null
+                )
                 SwipeableTransactionItem(
-                    transaction = income.toTransaction(),
+                    transaction = transaction,
                     onSwipeToDelete = { onDelete(income) },
                     onSwipeToEdit = { onEdit(income) }
                 ) {
                     Box {
                         TransactionItem(
-                            transaction = income.toTransaction(),
+                            transaction = transaction,
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .combinedClickable(
@@ -455,26 +506,6 @@ private fun IncomeList(
     }
 }
 
-private fun Expense.toTransaction() = Transaction(
-    id = id,
-    label = label,
-    amount = amount,
-    date = date,
-    isExpense = true,
-    isFixed = isFixed,
-    category = category
-)
-
-private fun Income.toTransaction() = Transaction(
-    id = id,
-    label = label,
-    amount = amount,
-    date = date,
-    isExpense = false,
-    isFixed = isFixed,
-    category = null
-)
-
 private fun formatCurrency(amount: Double): String {
     val formatter = NumberFormat.getCurrencyInstance(Locale.FRANCE)
     return formatter.format(amount)
@@ -483,6 +514,8 @@ private fun formatCurrency(amount: Double): String {
 @Preview(showBackground = true)
 @Composable
 private fun BudgetScreenContentPreview() {
+    val housingCategory = CategoryInitializer.DEFAULT_CATEGORIES.find { it.name == "Logement" }
+    val utilitiesCategory = CategoryInitializer.DEFAULT_CATEGORIES.find { it.name == "Factures" }
     PeculeTheme {
         Column(modifier = Modifier.fillMaxSize()) {
             TabRow(selectedTabIndex = 0) {
@@ -504,9 +537,9 @@ private fun BudgetScreenContentPreview() {
             LazyColumn {
                 items(
                     listOf(
-                        Transaction(1, "Loyer", 800.0, LocalDate.now(), true, true, Category.HOUSING),
-                        Transaction(2, "Internet", 30.0, LocalDate.now(), true, true, Category.UTILITIES),
-                        Transaction(3, "Électricité", 70.0, LocalDate.now(), true, true, Category.UTILITIES)
+                        Transaction(1, "Loyer", 800.0, LocalDate.now(), true, true, housingCategory),
+                        Transaction(2, "Internet", 30.0, LocalDate.now(), true, true, utilitiesCategory),
+                        Transaction(3, "Électricité", 70.0, LocalDate.now(), true, true, utilitiesCategory)
                     )
                 ) { transaction ->
                     TransactionItem(

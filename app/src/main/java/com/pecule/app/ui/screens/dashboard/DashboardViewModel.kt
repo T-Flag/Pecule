@@ -3,9 +3,11 @@ package com.pecule.app.ui.screens.dashboard
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.pecule.app.data.local.database.entity.BudgetCycle
+import com.pecule.app.data.local.database.entity.CategoryEntity
 import com.pecule.app.data.local.database.entity.Expense
 import com.pecule.app.data.local.database.entity.Income
 import com.pecule.app.data.repository.IBudgetCycleRepository
+import com.pecule.app.data.repository.ICategoryRepository
 import com.pecule.app.data.repository.IExpenseRepository
 import com.pecule.app.data.repository.IIncomeRepository
 import com.pecule.app.data.repository.IUserPreferencesRepository
@@ -30,6 +32,7 @@ class DashboardViewModel @Inject constructor(
     private val budgetCycleRepository: IBudgetCycleRepository,
     val expenseRepository: IExpenseRepository,
     val incomeRepository: IIncomeRepository,
+    private val categoryRepository: ICategoryRepository,
     private val balanceCalculator: BalanceCalculator
 ) : ViewModel() {
 
@@ -47,6 +50,13 @@ class DashboardViewModel @Inject constructor(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),
             initialValue = null
+        )
+
+    val categories: StateFlow<List<CategoryEntity>> = categoryRepository.getAllCategories()
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = emptyList()
         )
 
     private val currentCycleWithTransactions = budgetCycleRepository.currentCycle
@@ -86,25 +96,48 @@ class DashboardViewModel @Inject constructor(
             initialValue = 0f
         )
 
-    val recentTransactions: StateFlow<List<Transaction>> = currentCycleWithTransactions
-        .map { (_, expenses, incomes) ->
-            val variableExpenses = expenses
-                .filter { !it.isFixed }
-                .map { it.toTransaction() }
+    val recentTransactions: StateFlow<List<Transaction>> = combine(
+        currentCycleWithTransactions,
+        categories
+    ) { (_, expenses, incomes), categoryList ->
+        val categoryMap = categoryList.associateBy { it.id }
 
-            val variableIncomes = incomes
-                .filter { !it.isFixed }
-                .map { it.toTransaction() }
+        val variableExpenses = expenses
+            .filter { !it.isFixed }
+            .map { expense ->
+                Transaction(
+                    id = expense.id,
+                    label = expense.label,
+                    amount = expense.amount,
+                    date = expense.date,
+                    isExpense = true,
+                    isFixed = expense.isFixed,
+                    category = expense.categoryId?.let { categoryMap[it] }
+                )
+            }
 
-            (variableExpenses + variableIncomes)
-                .sortedByDescending { it.date }
-                .take(5)
-        }
-        .stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5000),
-            initialValue = emptyList()
-        )
+        val variableIncomes = incomes
+            .filter { !it.isFixed }
+            .map { income ->
+                Transaction(
+                    id = income.id,
+                    label = income.label,
+                    amount = income.amount,
+                    date = income.date,
+                    isExpense = false,
+                    isFixed = income.isFixed,
+                    category = null
+                )
+            }
+
+        (variableExpenses + variableIncomes)
+            .sortedByDescending { it.date }
+            .take(5)
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = emptyList()
+    )
 
     fun deleteExpense(expense: Expense) {
         viewModelScope.launch {
@@ -118,23 +151,7 @@ class DashboardViewModel @Inject constructor(
         }
     }
 
-    private fun Expense.toTransaction() = Transaction(
-        id = id,
-        label = label,
-        amount = amount,
-        date = date,
-        isExpense = true,
-        isFixed = isFixed,
-        category = category
-    )
-
-    private fun Income.toTransaction() = Transaction(
-        id = id,
-        label = label,
-        amount = amount,
-        date = date,
-        isExpense = false,
-        isFixed = isFixed,
-        category = null
-    )
+    fun getCategoryById(categoryId: Long?): CategoryEntity? {
+        return categoryId?.let { id -> categories.value.find { it.id == id } }
+    }
 }

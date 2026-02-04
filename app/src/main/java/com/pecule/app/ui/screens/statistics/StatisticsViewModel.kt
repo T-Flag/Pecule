@@ -3,8 +3,9 @@ package com.pecule.app.ui.screens.statistics
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.pecule.app.data.local.database.entity.BudgetCycle
-import com.pecule.app.data.local.database.entity.Category
+import com.pecule.app.data.local.database.entity.CategoryEntity
 import com.pecule.app.data.repository.IBudgetCycleRepository
+import com.pecule.app.data.repository.ICategoryRepository
 import com.pecule.app.data.repository.IExpenseRepository
 import com.pecule.app.data.repository.IIncomeRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -26,7 +27,8 @@ import javax.inject.Inject
 class StatisticsViewModel @Inject constructor(
     private val budgetCycleRepository: IBudgetCycleRepository,
     private val expenseRepository: IExpenseRepository,
-    private val incomeRepository: IIncomeRepository
+    private val incomeRepository: IIncomeRepository,
+    private val categoryRepository: ICategoryRepository
 ) : ViewModel() {
 
     val cycles: StateFlow<List<BudgetCycle>> = budgetCycleRepository.allCycles
@@ -38,6 +40,13 @@ class StatisticsViewModel @Inject constructor(
 
     private val _selectedCycle = MutableStateFlow<BudgetCycle?>(null)
     val selectedCycle: StateFlow<BudgetCycle?> = _selectedCycle.asStateFlow()
+
+    private val categories = categoryRepository.getAllCategories()
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = emptyList()
+        )
 
     init {
         viewModelScope.launch {
@@ -71,16 +80,21 @@ class StatisticsViewModel @Inject constructor(
             }
         }
 
-    val expensesByCategory: StateFlow<Map<Category, Double>> = expensesForSelectedCycle
-        .map { expenses ->
-            expenses.groupBy { it.category }
-                .mapValues { (_, expenseList) -> expenseList.sumOf { it.amount } }
-        }
-        .stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5000),
-            initialValue = emptyMap()
-        )
+    val expensesByCategory: StateFlow<Map<CategoryEntity, Double>> = combine(
+        expensesForSelectedCycle,
+        categories
+    ) { expenses, categoryList ->
+        val categoryMap = categoryList.associateBy { it.id }
+        expenses
+            .groupBy { expense -> expense.categoryId?.let { categoryMap[it] } }
+            .filterKeys { it != null }
+            .mapKeys { it.key!! }
+            .mapValues { (_, expenseList) -> expenseList.sumOf { it.amount } }
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = emptyMap()
+    )
 
     val totalExpenses: StateFlow<Double> = expensesForSelectedCycle
         .map { expenses -> expenses.sumOf { it.amount } }

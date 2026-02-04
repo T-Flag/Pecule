@@ -39,7 +39,7 @@ The project follows **Clean Architecture** with three layers:
 
 ### Domain Layer (`domain/`)
 - Business models and logic
-- Category enum (legacy) + CategoryEntity (new, customizable)
+- `CategoryEntity` - Database entity for customizable categories
 - `BalanceCalculator.kt` - Calculs de solde et pourcentage consommé
 - `Transaction.kt` - Data class pour l'affichage unifié dépenses/revenus
 - `CycleManager.kt` - Création de cycles et duplication des charges fixes
@@ -77,17 +77,19 @@ Les repositories utilisent des interfaces pour la testabilité :
 - `IBudgetCycleRepository` → `BudgetCycleRepository`
 - `IExpenseRepository` → `ExpenseRepository`
 - `IIncomeRepository` → `IncomeRepository`
+- `ICategoryRepository` → `CategoryRepository`
 
 Les bindings Hilt sont dans `di/RepositoryModule.kt`.
 
 ## Database Schema
 
-Three main entities with foreign key relationships:
+Four main entities with foreign key relationships:
 - **BudgetCycle**: Budget periods with amount and date range
-- **Expense**: Linked to cycle, categorized, fixed or variable
+- **Expense**: Linked to cycle and category via `categoryId`, fixed or variable
 - **Income**: Linked to cycle, fixed or variable
+- **CategoryEntity**: Categories with name, icon, color, and isDefault flag
 
-Type converters handle `LocalDate` (epoch days) and `Category` enum (string).
+Type converters handle `LocalDate` (epoch days).
 
 ## Version Catalog
 
@@ -99,24 +101,25 @@ Unit tests are in `app/src/test/java/com/pecule/app/`:
 
 | Fichier | Tests | Description |
 |---------|-------|-------------|
-| `ConvertersTest.kt` | 7 | Room type converters |
+| `ConvertersTest.kt` | 3 | Room type converters (LocalDate) |
 | `UserPreferencesTest.kt` | 4 | DataStore models |
 | `BudgetCycleRepositoryTest.kt` | 10 | Repository CRUD |
+| `CategoryRepositoryTest.kt` | 7 | Category CRUD and protection |
 | `OnboardingViewModelTest.kt` | 6 | Onboarding logic |
 | `OnboardingValidationTest.kt` | 18 | Form validation |
 | `BalanceCalculatorTest.kt` | 6 | Balance calculations |
-| `DashboardViewModelTest.kt` | 6 | Dashboard logic |
-| `TransactionDialogValidationTest.kt` | 17 | Transaction form validation |
-| `AddTransactionViewModelTest.kt` | 22 | Add/edit transaction logic |
-| `BudgetViewModelTest.kt` | 10 | Budget screen logic |
-| `ProfileViewModelTest.kt` | 9 | Profile screen logic |
-| `StatisticsViewModelTest.kt` | 9 | Statistics screen logic |
 | `CycleManagerTest.kt` | 10 | Cycle creation and duplication |
+| `DashboardViewModelTest.kt` | 6 | Dashboard logic |
+| `TransactionDialogValidationTest.kt` | 16 | Transaction form validation |
+| `AddTransactionViewModelTest.kt` | 23 | Add/edit transaction logic |
+| `DeleteConfirmationTest.kt` | 4 | Delete confirmation logic |
+| `BudgetViewModelTest.kt` | 10 | Budget screen logic |
 | `BudgetSwipeDeleteTest.kt` | 5 | Swipe to delete transactions |
 | `BudgetSwipeEditTest.kt` | 6 | Swipe to edit transactions |
-| `CategoryRepositoryTest.kt` | 7 | Category CRUD and protection |
+| `ProfileViewModelTest.kt` | 9 | Profile screen logic |
+| `StatisticsViewModelTest.kt` | 9 | Statistics screen logic |
 
-**Total : 148 tests**
+**Total : 153 tests**
 
 Use JUnit 4 assertions. For coroutines, use `kotlinx-coroutines-test` with `runTest`.
 Fake repositories are in test directories for mocking.
@@ -139,16 +142,19 @@ When a new salary is added:
 2. Create new cycle with new salary
 3. Duplicate all fixed expenses and incomes from previous cycle to new cycle
 
-### Category Enum (French labels)
-- SALARY: "Salaire"
-- FOOD: "Alimentation"
-- TRANSPORT: "Transport"
-- HOUSING: "Logement"
-- UTILITIES: "Factures"
-- ENTERTAINMENT: "Loisirs"
-- HEALTH: "Santé"
-- SHOPPING: "Shopping"
-- OTHER: "Autre"
+### Categories (French labels)
+Default categories stored in `CategoryEntity` table:
+- Salaire (id=1, icon=AttachMoney)
+- Alimentation (id=2, icon=Restaurant)
+- Transport (id=3, icon=DirectionsCar)
+- Logement (id=4, icon=Home)
+- Factures (id=5, icon=Receipt)
+- Loisirs (id=6, icon=SportsEsports)
+- Santé (id=7, icon=LocalHospital)
+- Shopping (id=8, icon=ShoppingCart)
+- Autre (id=9, icon=Category)
+
+Categories are initialized by `CategoryInitializer.kt` on first app launch.
 
 ## UI Theme "Soft Mint"
 
@@ -213,7 +219,8 @@ PeculeTheme accepts `themePreference` parameter and applies the correct color sc
 - Profile screen: edit name, theme selector, new salary button
 - Statistics screen: DonutChart, cycle selector, category legend, summary
 - CycleManager: create new cycle, auto-duplicate fixed expenses/incomes
-- 135 unit tests passing
+- CategoryEntity migration: categories stored in Room database
+- 153 unit tests passing
 
 ### App Features Complete 🎉
 - Full budget cycle management

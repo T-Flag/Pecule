@@ -40,7 +40,8 @@ import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.pecule.app.data.local.database.entity.Category
+import com.pecule.app.data.local.database.entity.CategoryEntity
+import com.pecule.app.domain.CategoryInitializer
 import com.pecule.app.ui.theme.PeculeTheme
 import kotlinx.coroutines.launch
 import java.time.Instant
@@ -55,13 +56,14 @@ fun AddTransactionDialog(
     isEditing: Boolean,
     label: String,
     amount: Double?,
-    category: Category?,
+    category: CategoryEntity?,
     date: LocalDate,
     isFixed: Boolean,
     errors: List<String>,
+    categories: List<CategoryEntity>,
     onLabelChange: (String) -> Unit,
     onAmountChange: (Double?) -> Unit,
-    onCategoryChange: (Category) -> Unit,
+    onCategoryChange: (CategoryEntity) -> Unit,
     onDateChange: (LocalDate) -> Unit,
     onIsFixedChange: (Boolean) -> Unit,
     onDismiss: () -> Unit,
@@ -155,7 +157,7 @@ fun AddTransactionDialog(
                         onExpandedChange = { categoryExpanded = it }
                     ) {
                         OutlinedTextField(
-                            value = category?.label ?: "",
+                            value = category?.name ?: "",
                             onValueChange = { },
                             readOnly = true,
                             label = { Text("Catégorie") },
@@ -173,9 +175,9 @@ fun AddTransactionDialog(
                             expanded = categoryExpanded,
                             onDismissRequest = { categoryExpanded = false }
                         ) {
-                            Category.entries.forEach { cat ->
+                            categories.forEach { cat ->
                                 DropdownMenuItem(
-                                    text = { Text(cat.label) },
+                                    text = { Text(cat.name) },
                                     onClick = {
                                         onCategoryChange(cat)
                                         categoryExpanded = false
@@ -281,6 +283,7 @@ fun AddTransactionDialog(
 @Composable
 fun AddTransactionDialogWithViewModel(
     viewModel: AddTransactionViewModel,
+    categories: List<CategoryEntity>,
     onDismiss: () -> Unit,
     onSaveSuccess: () -> Unit
 ) {
@@ -303,6 +306,7 @@ fun AddTransactionDialogWithViewModel(
         date = uiState.date,
         isFixed = uiState.isFixed,
         errors = errors,
+        categories = categories,
         onLabelChange = { viewModel.updateLabel(it) },
         onAmountChange = { viewModel.updateAmount(it) },
         onCategoryChange = { viewModel.updateCategory(it) },
@@ -337,6 +341,7 @@ private fun AddTransactionDialogExpensePreview() {
             date = LocalDate.now(),
             isFixed = false,
             errors = emptyList(),
+            categories = CategoryInitializer.DEFAULT_CATEGORIES,
             onLabelChange = {},
             onAmountChange = {},
             onCategoryChange = {},
@@ -361,6 +366,7 @@ private fun AddTransactionDialogIncomePreview() {
             date = LocalDate.of(2025, 1, 25),
             isFixed = false,
             errors = emptyList(),
+            categories = emptyList(),
             onLabelChange = {},
             onAmountChange = {},
             onCategoryChange = {},
@@ -389,6 +395,7 @@ private fun AddTransactionDialogWithErrorsPreview() {
                 "Le montant est requis",
                 "La catégorie est requise"
             ),
+            categories = CategoryInitializer.DEFAULT_CATEGORIES,
             onLabelChange = {},
             onAmountChange = {},
             onCategoryChange = {},
@@ -403,16 +410,18 @@ private fun AddTransactionDialogWithErrorsPreview() {
 @Preview(showBackground = true)
 @Composable
 private fun AddTransactionDialogEditModePreview() {
+    val foodCategory = CategoryInitializer.DEFAULT_CATEGORIES.find { it.name == "Alimentation" }
     PeculeTheme {
         AddTransactionDialog(
             isExpense = true,
             isEditing = true,
             label = "Courses Carrefour",
             amount = 85.50,
-            category = Category.FOOD,
+            category = foodCategory,
             date = LocalDate.of(2025, 1, 20),
             isFixed = false,
             errors = emptyList(),
+            categories = CategoryInitializer.DEFAULT_CATEGORIES,
             onLabelChange = {},
             onAmountChange = {},
             onCategoryChange = {},
@@ -427,16 +436,18 @@ private fun AddTransactionDialogEditModePreview() {
 @Preview(showBackground = true, uiMode = android.content.res.Configuration.UI_MODE_NIGHT_YES)
 @Composable
 private fun AddTransactionDialogDarkPreview() {
+    val entertainmentCategory = CategoryInitializer.DEFAULT_CATEGORIES.find { it.name == "Loisirs" }
     PeculeTheme(darkTheme = true) {
         AddTransactionDialog(
             isExpense = true,
             isEditing = false,
             label = "Restaurant",
             amount = 42.0,
-            category = Category.ENTERTAINMENT,
+            category = entertainmentCategory,
             date = LocalDate.now(),
             isFixed = false,
             errors = emptyList(),
+            categories = CategoryInitializer.DEFAULT_CATEGORIES,
             onLabelChange = {},
             onAmountChange = {},
             onCategoryChange = {},

@@ -1,6 +1,5 @@
 package com.pecule.app.data.local.database
 
-import com.pecule.app.data.local.database.entity.Category
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Before
@@ -35,37 +34,6 @@ class ConvertersTest {
     @Test
     fun `null Long should return null LocalDate`() {
         val result = converters.toLocalDate(null)
-        assertNull(result)
-    }
-
-    @Test
-    fun `Category to String and back should return same category`() {
-        val originalCategory = Category.FOOD
-
-        val name = converters.fromCategory(originalCategory)
-        val resultCategory = converters.toCategory(name)
-
-        assertEquals(originalCategory, resultCategory)
-    }
-
-    @Test
-    fun `all categories should convert correctly`() {
-        Category.entries.forEach { category ->
-            val name = converters.fromCategory(category)
-            val result = converters.toCategory(name)
-            assertEquals(category, result)
-        }
-    }
-
-    @Test
-    fun `null Category should return null String`() {
-        val result = converters.fromCategory(null)
-        assertNull(result)
-    }
-
-    @Test
-    fun `null String should return null Category`() {
-        val result = converters.toCategory(null)
         assertNull(result)
     }
 }

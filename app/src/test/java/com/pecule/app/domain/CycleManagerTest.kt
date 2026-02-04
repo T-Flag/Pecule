@@ -1,7 +1,6 @@
 package com.pecule.app.domain
 
 import com.pecule.app.data.local.database.entity.BudgetCycle
-import com.pecule.app.data.local.database.entity.Category
 import com.pecule.app.data.local.database.entity.Expense
 import com.pecule.app.data.local.database.entity.Income
 import com.pecule.app.ui.screens.dashboard.FakeExpenseRepository
@@ -21,6 +20,11 @@ class CycleManagerTest {
     private lateinit var expenseRepository: FakeExpenseRepository
     private lateinit var incomeRepository: FakeIncomeRepository
     private lateinit var cycleManager: CycleManager
+
+    // Category IDs from CategoryInitializer
+    private val foodCategoryId = 2L
+    private val housingCategoryId = 4L
+    private val utilitiesCategoryId = 5L
 
     @Before
     fun setup() {
@@ -45,11 +49,11 @@ class CycleManagerTest {
             )
         )
 
-        // When: on crée un nouveau cycle
+        // When: on cree un nouveau cycle
         val newDate = LocalDate.of(2025, 2, 15)
         cycleManager.createNewCycle(amount = 2200.0, startDate = newDate)
 
-        // Then: le cycle précédent est fermé avec endDate = veille du nouveau cycle
+        // Then: le cycle precedent est ferme avec endDate = veille du nouveau cycle
         val closedCycle = cycleRepository.getById(currentCycleId).first()
         assertEquals(LocalDate.of(2025, 2, 14), closedCycle?.endDate)
     }
@@ -65,7 +69,7 @@ class CycleManagerTest {
             )
         )
 
-        // When: on crée un nouveau cycle
+        // When: on cree un nouveau cycle
         val newAmount = 2500.0
         val newDate = LocalDate.of(2025, 2, 15)
         cycleManager.createNewCycle(amount = newAmount, startDate = newDate)
@@ -88,20 +92,20 @@ class CycleManagerTest {
             )
         )
 
-        // When: on crée un nouveau cycle
+        // When: on cree un nouveau cycle
         val newCycleId = cycleManager.createNewCycle(
             amount = 2200.0,
             startDate = LocalDate.of(2025, 2, 15)
         )
 
-        // Then: l'ID retourné correspond au nouveau cycle
+        // Then: l'ID retourne correspond au nouveau cycle
         val newCycle = cycleRepository.getById(newCycleId).first()
         assertEquals(2200.0, newCycle?.amount)
     }
 
     @Test
     fun `createNewCycle duplicates all fixed expenses from previous cycle`() = runTest {
-        // Given: un cycle avec des dépenses fixes et variables
+        // Given: un cycle avec des depenses fixes et variables
         val currentCycleId = cycleRepository.insert(
             BudgetCycle(
                 amount = 2000.0,
@@ -112,7 +116,7 @@ class CycleManagerTest {
         expenseRepository.insert(
             Expense(
                 cycleId = currentCycleId,
-                category = Category.HOUSING,
+                categoryId = housingCategoryId,
                 label = "Loyer",
                 amount = 800.0,
                 date = LocalDate.of(2025, 1, 15),
@@ -122,7 +126,7 @@ class CycleManagerTest {
         expenseRepository.insert(
             Expense(
                 cycleId = currentCycleId,
-                category = Category.UTILITIES,
+                categoryId = utilitiesCategoryId,
                 label = "Internet",
                 amount = 40.0,
                 date = LocalDate.of(2025, 1, 15),
@@ -132,7 +136,7 @@ class CycleManagerTest {
         expenseRepository.insert(
             Expense(
                 cycleId = currentCycleId,
-                category = Category.FOOD,
+                categoryId = foodCategoryId,
                 label = "Courses",
                 amount = 50.0,
                 date = LocalDate.of(2025, 1, 20),
@@ -140,18 +144,18 @@ class CycleManagerTest {
             )
         )
 
-        // When: on crée un nouveau cycle
+        // When: on cree un nouveau cycle
         val newDate = LocalDate.of(2025, 2, 15)
         val newCycleId = cycleManager.createNewCycle(amount = 2200.0, startDate = newDate)
 
-        // Then: les 2 dépenses fixes sont dupliquées dans le nouveau cycle
+        // Then: les 2 depenses fixes sont dupliquees dans le nouveau cycle
         val newCycleExpenses = expenseRepository.getByCycleId(newCycleId).first()
         assertEquals(2, newCycleExpenses.size)
     }
 
     @Test
-    fun `duplicated expenses have new cycleId but keep same label, amount, category, isFixed`() = runTest {
-        // Given: un cycle avec une dépense fixe
+    fun `duplicated expenses have new cycleId but keep same label, amount, categoryId, isFixed`() = runTest {
+        // Given: un cycle avec une depense fixe
         val currentCycleId = cycleRepository.insert(
             BudgetCycle(
                 amount = 2000.0,
@@ -162,7 +166,7 @@ class CycleManagerTest {
         expenseRepository.insert(
             Expense(
                 cycleId = currentCycleId,
-                category = Category.HOUSING,
+                categoryId = housingCategoryId,
                 label = "Loyer appartement",
                 amount = 850.0,
                 date = LocalDate.of(2025, 1, 15),
@@ -170,24 +174,24 @@ class CycleManagerTest {
             )
         )
 
-        // When: on crée un nouveau cycle
+        // When: on cree un nouveau cycle
         val newCycleId = cycleManager.createNewCycle(
             amount = 2200.0,
             startDate = LocalDate.of(2025, 2, 15)
         )
 
-        // Then: la dépense dupliquée garde les mêmes propriétés
+        // Then: la depense dupliquee garde les memes proprietes
         val duplicatedExpense = expenseRepository.getByCycleId(newCycleId).first().first()
         assertEquals(newCycleId, duplicatedExpense.cycleId)
         assertEquals("Loyer appartement", duplicatedExpense.label)
         assertEquals(850.0, duplicatedExpense.amount, 0.01)
-        assertEquals(Category.HOUSING, duplicatedExpense.category)
+        assertEquals(housingCategoryId, duplicatedExpense.categoryId)
         assertEquals(true, duplicatedExpense.isFixed)
     }
 
     @Test
     fun `duplicated expenses have new date matching new cycle start date`() = runTest {
-        // Given: un cycle avec une dépense fixe
+        // Given: un cycle avec une depense fixe
         val currentCycleId = cycleRepository.insert(
             BudgetCycle(
                 amount = 2000.0,
@@ -198,7 +202,7 @@ class CycleManagerTest {
         expenseRepository.insert(
             Expense(
                 cycleId = currentCycleId,
-                category = Category.HOUSING,
+                categoryId = housingCategoryId,
                 label = "Loyer",
                 amount = 800.0,
                 date = LocalDate.of(2025, 1, 15),
@@ -206,11 +210,11 @@ class CycleManagerTest {
             )
         )
 
-        // When: on crée un nouveau cycle
+        // When: on cree un nouveau cycle
         val newDate = LocalDate.of(2025, 2, 15)
         val newCycleId = cycleManager.createNewCycle(amount = 2200.0, startDate = newDate)
 
-        // Then: la dépense dupliquée a la date du nouveau cycle
+        // Then: la depense dupliquee a la date du nouveau cycle
         val duplicatedExpense = expenseRepository.getByCycleId(newCycleId).first().first()
         assertEquals(newDate, duplicatedExpense.date)
     }
@@ -237,7 +241,7 @@ class CycleManagerTest {
         incomeRepository.insert(
             Income(
                 cycleId = currentCycleId,
-                label = "Loyer perçu",
+                label = "Loyer percu",
                 amount = 500.0,
                 date = LocalDate.of(2025, 1, 15),
                 isFixed = true
@@ -253,11 +257,11 @@ class CycleManagerTest {
             )
         )
 
-        // When: on crée un nouveau cycle
+        // When: on cree un nouveau cycle
         val newDate = LocalDate.of(2025, 2, 15)
         val newCycleId = cycleManager.createNewCycle(amount = 2200.0, startDate = newDate)
 
-        // Then: les 2 revenus fixes sont dupliqués dans le nouveau cycle
+        // Then: les 2 revenus fixes sont dupliques dans le nouveau cycle
         val newCycleIncomes = incomeRepository.getByCycleId(newCycleId).first()
         assertEquals(2, newCycleIncomes.size)
     }
@@ -282,11 +286,11 @@ class CycleManagerTest {
             )
         )
 
-        // When: on crée un nouveau cycle
+        // When: on cree un nouveau cycle
         val newDate = LocalDate.of(2025, 2, 15)
         val newCycleId = cycleManager.createNewCycle(amount = 2200.0, startDate = newDate)
 
-        // Then: le revenu dupliqué garde les mêmes propriétés avec la nouvelle date
+        // Then: le revenu duplique garde les memes proprietes avec la nouvelle date
         val duplicatedIncome = incomeRepository.getByCycleId(newCycleId).first().first()
         assertEquals(newCycleId, duplicatedIncome.cycleId)
         assertEquals("Pension alimentaire", duplicatedIncome.label)
@@ -299,11 +303,11 @@ class CycleManagerTest {
     fun `createNewCycle without current cycle simply creates new cycle`() = runTest {
         // Given: aucun cycle existant
 
-        // When: on crée un nouveau cycle
+        // When: on cree un nouveau cycle
         val newDate = LocalDate.of(2025, 1, 15)
         val newCycleId = cycleManager.createNewCycle(amount = 2000.0, startDate = newDate)
 
-        // Then: le cycle est créé correctement
+        // Then: le cycle est cree correctement
         val allCycles = cycleRepository.allCycles.first()
         assertEquals(1, allCycles.size)
 
@@ -315,7 +319,7 @@ class CycleManagerTest {
 
     @Test
     fun `createNewCycle with current cycle but no fixed items duplicates nothing`() = runTest {
-        // Given: un cycle avec uniquement des dépenses et revenus variables
+        // Given: un cycle avec uniquement des depenses et revenus variables
         val currentCycleId = cycleRepository.insert(
             BudgetCycle(
                 amount = 2000.0,
@@ -326,7 +330,7 @@ class CycleManagerTest {
         expenseRepository.insert(
             Expense(
                 cycleId = currentCycleId,
-                category = Category.FOOD,
+                categoryId = foodCategoryId,
                 label = "Restaurant",
                 amount = 45.0,
                 date = LocalDate.of(2025, 1, 20),
@@ -343,11 +347,11 @@ class CycleManagerTest {
             )
         )
 
-        // When: on crée un nouveau cycle
+        // When: on cree un nouveau cycle
         val newDate = LocalDate.of(2025, 2, 15)
         val newCycleId = cycleManager.createNewCycle(amount = 2200.0, startDate = newDate)
 
-        // Then: aucune dépense ni revenu n'est dupliqué
+        // Then: aucune depense ni revenu n'est duplique
         val newCycleExpenses = expenseRepository.getByCycleId(newCycleId).first()
         val newCycleIncomes = incomeRepository.getByCycleId(newCycleId).first()
         assertEquals(0, newCycleExpenses.size)

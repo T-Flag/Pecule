@@ -17,6 +17,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccountBalanceWallet
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.DropdownMenu
@@ -56,6 +57,7 @@ import com.pecule.app.ui.components.BalanceCard
 import com.pecule.app.ui.components.BalanceCardPlaceholder
 import com.pecule.app.ui.components.BudgetAlertBanner
 import com.pecule.app.ui.components.DeleteConfirmationDialog
+import com.pecule.app.ui.components.EmptyStateView
 import com.pecule.app.ui.components.SwipeableTransactionItem
 import com.pecule.app.ui.components.TransactionItem
 import com.pecule.app.ui.components.TransactionListPlaceholder
@@ -141,6 +143,10 @@ fun DashboardScreen(
             recentTransactions = recentTransactions,
             isLoading = isLoading,
             onNavigateToProfile = onNavigateToProfile,
+            onAddExpense = {
+                isExpenseDialog = true
+                showAddDialog = true
+            },
             contextMenuTransaction = contextMenuTransaction,
             onContextMenuOpen = { contextMenuTransaction = it },
             onContextMenuDismiss = { contextMenuTransaction = null },
@@ -248,6 +254,7 @@ private fun DashboardContent(
     recentTransactions: List<Transaction>,
     isLoading: Boolean = false,
     onNavigateToProfile: () -> Unit,
+    onAddExpense: () -> Unit = {},
     contextMenuTransaction: Transaction? = null,
     onContextMenuOpen: (Transaction) -> Unit = {},
     onContextMenuDismiss: () -> Unit = {},
@@ -328,18 +335,13 @@ private fun DashboardContent(
         if (isLoading) {
             TransactionListPlaceholder(itemCount = 3)
         } else if (recentTransactions.isEmpty()) {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 32.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = "Aucune activité récente",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
-                )
-            }
+            EmptyStateView(
+                icon = Icons.Default.AccountBalanceWallet,
+                title = "Rien à afficher",
+                subtitle = "Ajoutez votre première dépense avec le bouton +",
+                actionLabel = "Ajouter une dépense",
+                onAction = onAddExpense
+            )
         } else {
             LazyColumn(
                 modifier = Modifier.fillMaxWidth()

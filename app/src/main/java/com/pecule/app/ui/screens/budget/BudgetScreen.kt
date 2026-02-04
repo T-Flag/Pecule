@@ -15,6 +15,10 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.FileDownload
+import androidx.compose.material.icons.automirrored.filled.TrendingUp
+import androidx.compose.material.icons.filled.Repeat
+import androidx.compose.material.icons.filled.ShoppingBag
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.FloatingActionButton
@@ -50,6 +54,7 @@ import com.pecule.app.ui.components.AddTransactionDialog
 import com.pecule.app.ui.components.AddTransactionUiState
 import com.pecule.app.ui.components.AddTransactionViewModel
 import com.pecule.app.ui.components.DeleteConfirmationDialog
+import com.pecule.app.ui.components.EmptyStateView
 import com.pecule.app.ui.components.ExportDialog
 import com.pecule.app.ui.components.ExportFormat
 import com.pecule.app.ui.components.SwipeableTransactionItem
@@ -102,10 +107,28 @@ fun BudgetScreen(
         else -> totalIncomes
     }
 
-    val emptyMessage = when (selectedTab) {
-        0 -> "Aucune dépense fixe"
-        1 -> "Aucune dépense variable"
-        else -> "Aucun revenu"
+    data class EmptyStateConfig(
+        val icon: ImageVector,
+        val title: String,
+        val subtitle: String
+    )
+
+    val emptyStateConfig = when (selectedTab) {
+        0 -> EmptyStateConfig(
+            icon = Icons.Default.Repeat,
+            title = "Pas de charges fixes",
+            subtitle = "Les charges fixes sont dupliquées automatiquement à chaque nouveau cycle"
+        )
+        1 -> EmptyStateConfig(
+            icon = Icons.Default.ShoppingBag,
+            title = "Pas de dépenses variables",
+            subtitle = "Ajoutez vos dépenses quotidiennes ici"
+        )
+        else -> EmptyStateConfig(
+            icon = Icons.AutoMirrored.Filled.TrendingUp,
+            title = "Pas de revenus",
+            subtitle = "Ajoutez vos revenus supplémentaires ici"
+        )
     }
 
     // Helper to convert Expense to Transaction
@@ -209,7 +232,9 @@ fun BudgetScreen(
                 when (selectedTab) {
                     0 -> ExpenseList(
                         expenses = fixedExpenses,
-                        emptyMessage = emptyMessage,
+                        emptyIcon = emptyStateConfig.icon,
+                        emptyTitle = emptyStateConfig.title,
+                        emptySubtitle = emptyStateConfig.subtitle,
                         contextMenuExpense = contextMenuExpense,
                         categories = categories,
                         onContextMenuOpen = { contextMenuExpense = it },
@@ -227,7 +252,9 @@ fun BudgetScreen(
                     )
                     1 -> ExpenseList(
                         expenses = variableExpenses,
-                        emptyMessage = emptyMessage,
+                        emptyIcon = emptyStateConfig.icon,
+                        emptyTitle = emptyStateConfig.title,
+                        emptySubtitle = emptyStateConfig.subtitle,
                         contextMenuExpense = contextMenuExpense,
                         categories = categories,
                         onContextMenuOpen = { contextMenuExpense = it },
@@ -245,7 +272,9 @@ fun BudgetScreen(
                     )
                     2 -> IncomeList(
                         incomes = incomes,
-                        emptyMessage = emptyMessage,
+                        emptyIcon = emptyStateConfig.icon,
+                        emptyTitle = emptyStateConfig.title,
+                        emptySubtitle = emptyStateConfig.subtitle,
                         contextMenuIncome = contextMenuIncome,
                         onContextMenuOpen = { contextMenuIncome = it },
                         onContextMenuDismiss = { contextMenuIncome = null },
@@ -427,7 +456,9 @@ private fun AddTransactionDialogWrapper(
 @Composable
 private fun ExpenseList(
     expenses: List<Expense>,
-    emptyMessage: String,
+    emptyIcon: ImageVector,
+    emptyTitle: String,
+    emptySubtitle: String,
     contextMenuExpense: Expense?,
     categories: List<CategoryEntity>,
     onContextMenuOpen: (Expense) -> Unit,
@@ -438,15 +469,13 @@ private fun ExpenseList(
 ) {
     if (expenses.isEmpty()) {
         Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(32.dp),
+            modifier = Modifier.fillMaxSize(),
             contentAlignment = Alignment.Center
         ) {
-            Text(
-                text = emptyMessage,
-                style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+            EmptyStateView(
+                icon = emptyIcon,
+                title = emptyTitle,
+                subtitle = emptySubtitle
             )
         }
     } else {
@@ -507,7 +536,9 @@ private fun ExpenseList(
 @Composable
 private fun IncomeList(
     incomes: List<Income>,
-    emptyMessage: String,
+    emptyIcon: ImageVector,
+    emptyTitle: String,
+    emptySubtitle: String,
     contextMenuIncome: Income?,
     onContextMenuOpen: (Income) -> Unit,
     onContextMenuDismiss: () -> Unit,
@@ -516,15 +547,13 @@ private fun IncomeList(
 ) {
     if (incomes.isEmpty()) {
         Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(32.dp),
+            modifier = Modifier.fillMaxSize(),
             contentAlignment = Alignment.Center
         ) {
-            Text(
-                text = emptyMessage,
-                style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+            EmptyStateView(
+                icon = emptyIcon,
+                title = emptyTitle,
+                subtitle = emptySubtitle
             )
         }
     } else {

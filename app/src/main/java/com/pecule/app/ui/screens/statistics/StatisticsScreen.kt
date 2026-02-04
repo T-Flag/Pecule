@@ -18,6 +18,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material.icons.filled.FileDownload
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material3.Card
@@ -52,6 +53,7 @@ import com.pecule.app.ui.components.BalanceHistoryCard
 import com.pecule.app.ui.components.CategoryColors
 import com.pecule.app.ui.components.DonutChart
 import com.pecule.app.ui.components.DonutChartPlaceholder
+import com.pecule.app.ui.components.EmptyStateView
 import com.pecule.app.ui.components.ExportDialog
 import com.pecule.app.ui.components.ExportFormat
 import kotlinx.coroutines.Dispatchers
@@ -188,10 +190,10 @@ private fun StatisticsContent(
         Spacer(modifier = Modifier.height(24.dp))
 
         if (expensesByCategory.isEmpty()) {
-            Text(
-                text = "Aucune dépense ce mois",
-                style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+            EmptyStateView(
+                icon = Icons.Default.BarChart,
+                title = "Pas encore de statistiques",
+                subtitle = "Les graphiques apparaîtront après vos premières dépenses"
             )
         } else {
             CategoryLegend(

@@ -2,6 +2,7 @@ package com.pecule.app.ui.screens.budget
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.pecule.app.data.local.database.entity.BudgetCycle
 import com.pecule.app.data.local.database.entity.CategoryEntity
 import com.pecule.app.data.local.database.entity.Expense
 import com.pecule.app.data.local.database.entity.Income
@@ -46,6 +47,13 @@ class BudgetViewModel @Inject constructor(
             }
         }
     }
+
+    val currentCycle: StateFlow<BudgetCycle?> = budgetCycleRepository.currentCycle
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = null
+        )
 
     val categories: StateFlow<List<CategoryEntity>> = categoryRepository.getAllCategories()
         .stateIn(
@@ -139,4 +147,22 @@ class BudgetViewModel @Inject constructor(
     fun getCategoryById(categoryId: Long?): CategoryEntity? {
         return categoryId?.let { id -> categories.value.find { it.id == id } }
     }
+
+    fun getExportData(): ExportData {
+        val allExpenses = fixedExpenses.value + variableExpenses.value
+        val allIncomes = incomes.value
+        val categoryMap = categories.value.associateBy { it.id }
+
+        return ExportData(
+            expenses = allExpenses,
+            incomes = allIncomes,
+            categories = categoryMap
+        )
+    }
+
+    data class ExportData(
+        val expenses: List<Expense>,
+        val incomes: List<Income>,
+        val categories: Map<Long, CategoryEntity>
+    )
 }

@@ -119,8 +119,10 @@ Unit tests are in `app/src/test/java/com/pecule/app/`:
 | `ProfileViewModelTest.kt` | 9 | Profile screen logic |
 | `CategoriesViewModelTest.kt` | 11 | Categories CRUD and validation |
 | `StatisticsViewModelTest.kt` | 11 | Statistics screen logic |
+| `CsvExporterTest.kt` | 10 | CSV export format |
+| `PdfExporterTest.kt` | 8 | PDF export data preparation |
 
-**Total : 170 tests**
+**Total : 187 tests**
 
 Use JUnit 4 assertions. For coroutines, use `kotlinx-coroutines-test` with `runTest`.
 Fake repositories are in test directories for mocking.
@@ -225,7 +227,8 @@ PeculeTheme accepts `themePreference` parameter and applies the correct color sc
 - CategoryEntity migration: categories stored in Room database
 - Custom categories UI: create, edit, delete with color/icon picker
 - Loading states with shimmer placeholders on all screens
-- 170 unit tests passing
+- Export CSV and PDF with format chooser dialog
+- 187 unit tests passing
 
 ### App Features Complete 🎉
 - Full budget cycle management

@@ -1,5 +1,6 @@
 package com.pecule.app.ui.screens.statistics
 
+import android.content.Intent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -17,6 +18,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.FileDownload
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -24,6 +26,7 @@ import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -31,19 +34,27 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.pecule.app.data.local.database.entity.BudgetCycle
 import com.pecule.app.data.local.database.entity.CategoryEntity
+import com.pecule.app.domain.ExportManager
 import com.pecule.app.ui.components.CategoryColors
 import com.pecule.app.ui.components.DonutChart
 import com.pecule.app.ui.components.DonutChartPlaceholder
+import com.pecule.app.ui.components.ExportDialog
+import com.pecule.app.ui.components.ExportFormat
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.text.NumberFormat
 import java.time.format.DateTimeFormatter
 import java.util.Locale
@@ -53,6 +64,9 @@ fun StatisticsScreen(
     modifier: Modifier = Modifier,
     viewModel: StatisticsViewModel = hiltViewModel()
 ) {
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+
     val cycles by viewModel.cycles.collectAsState()
     val selectedCycle by viewModel.selectedCycle.collectAsState()
     val expensesByCategory by viewModel.expensesByCategory.collectAsState()
@@ -60,6 +74,8 @@ fun StatisticsScreen(
     val totalIncomes by viewModel.totalIncomes.collectAsState()
     val balance by viewModel.balance.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
+
+    var showExportDialog by remember { mutableStateOf(false) }
 
     StatisticsContent(
         cycles = cycles,
@@ -70,8 +86,41 @@ fun StatisticsScreen(
         balance = balance,
         isLoading = isLoading,
         onCycleSelected = viewModel::selectCycle,
+        onExportClick = { showExportDialog = true },
         modifier = modifier
     )
+
+    if (showExportDialog && selectedCycle != null) {
+        ExportDialog(
+            onDismiss = { showExportDialog = false },
+            onExport = { format ->
+                showExportDialog = false
+                scope.launch {
+                    val exportData = viewModel.getExportData()
+                    val exportManager = ExportManager(context)
+
+                    val intent = withContext(Dispatchers.IO) {
+                        when (format) {
+                            ExportFormat.CSV -> exportManager.exportCsv(
+                                cycle = selectedCycle!!,
+                                expenses = exportData.expenses,
+                                incomes = exportData.incomes,
+                                categories = exportData.categories
+                            )
+                            ExportFormat.PDF -> exportManager.exportPdf(
+                                cycle = selectedCycle!!,
+                                expenses = exportData.expenses,
+                                incomes = exportData.incomes,
+                                categories = exportData.categories
+                            )
+                        }
+                    }
+
+                    context.startActivity(Intent.createChooser(intent, "Exporter"))
+                }
+            }
+        )
+    }
 }
 
 @Composable
@@ -84,6 +133,7 @@ private fun StatisticsContent(
     balance: Double,
     isLoading: Boolean = false,
     onCycleSelected: (BudgetCycle) -> Unit,
+    onExportClick: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val scrollState = rememberScrollState()
@@ -95,11 +145,28 @@ private fun StatisticsContent(
             .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        CycleSelector(
-            cycles = cycles,
-            selectedCycle = selectedCycle,
-            onCycleSelected = onCycleSelected
-        )
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            CycleSelector(
+                cycles = cycles,
+                selectedCycle = selectedCycle,
+                onCycleSelected = onCycleSelected,
+                modifier = Modifier.weight(1f)
+            )
+
+            if (selectedCycle != null) {
+                IconButton(onClick = onExportClick) {
+                    Icon(
+                        imageVector = Icons.Default.FileDownload,
+                        contentDescription = "Exporter",
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                }
+            }
+        }
 
         Spacer(modifier = Modifier.height(24.dp))
 

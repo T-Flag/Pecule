@@ -1,9 +1,12 @@
 package com.pecule.app.ui.screens.budget
 
+import android.content.Intent
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -11,10 +14,12 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.FileDownload
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Tab
@@ -29,6 +34,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -38,16 +44,21 @@ import com.pecule.app.data.local.database.entity.CategoryEntity
 import com.pecule.app.data.local.database.entity.Expense
 import com.pecule.app.data.local.database.entity.Income
 import com.pecule.app.domain.CategoryInitializer
+import com.pecule.app.domain.ExportManager
 import com.pecule.app.domain.Transaction
 import com.pecule.app.ui.components.AddTransactionDialog
 import com.pecule.app.ui.components.AddTransactionUiState
 import com.pecule.app.ui.components.AddTransactionViewModel
 import com.pecule.app.ui.components.DeleteConfirmationDialog
+import com.pecule.app.ui.components.ExportDialog
+import com.pecule.app.ui.components.ExportFormat
 import com.pecule.app.ui.components.SwipeableTransactionItem
 import com.pecule.app.ui.components.TransactionItem
 import com.pecule.app.ui.components.TransactionListPlaceholder
 import com.pecule.app.ui.theme.PeculeTheme
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.text.NumberFormat
 import java.time.LocalDate
 import java.util.Locale
@@ -59,6 +70,9 @@ fun BudgetScreen(
     modifier: Modifier = Modifier,
     viewModel: BudgetViewModel = hiltViewModel()
 ) {
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+
     val selectedTab by viewModel.selectedTab.collectAsStateWithLifecycle()
     val fixedExpenses by viewModel.fixedExpenses.collectAsStateWithLifecycle()
     val variableExpenses by viewModel.variableExpenses.collectAsStateWithLifecycle()
@@ -68,8 +82,10 @@ fun BudgetScreen(
     val totalIncomes by viewModel.totalIncomes.collectAsStateWithLifecycle()
     val categories by viewModel.categories.collectAsStateWithLifecycle()
     val isLoading by viewModel.isLoading.collectAsStateWithLifecycle()
+    val currentCycle by viewModel.currentCycle.collectAsStateWithLifecycle()
 
     var showAddDialog by remember { mutableStateOf(false) }
+    var showExportDialog by remember { mutableStateOf(false) }
     var editingTransaction by remember { mutableStateOf<Transaction?>(null) }
 
     // Context menu state
@@ -157,14 +173,31 @@ fun BudgetScreen(
                 }
             }
 
-            // Total
-            Text(
-                text = "Total : ${formatCurrency(currentTotal)}",
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.SemiBold,
-                color = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.padding(16.dp)
-            )
+            // Total and Export button
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "Total : ${formatCurrency(currentTotal)}",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.primary
+                )
+
+                if (currentCycle != null) {
+                    IconButton(onClick = { showExportDialog = true }) {
+                        Icon(
+                            imageVector = Icons.Default.FileDownload,
+                            contentDescription = "Exporter",
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                }
+            }
 
             // Content based on selected tab
             if (isLoading) {
@@ -277,6 +310,39 @@ fun BudgetScreen(
             },
             onDismiss = {
                 incomeToDelete = null
+            }
+        )
+    }
+
+    // Export Dialog
+    if (showExportDialog && currentCycle != null) {
+        ExportDialog(
+            onDismiss = { showExportDialog = false },
+            onExport = { format ->
+                showExportDialog = false
+                scope.launch {
+                    val exportData = viewModel.getExportData()
+                    val exportManager = ExportManager(context)
+
+                    val intent = withContext(Dispatchers.IO) {
+                        when (format) {
+                            ExportFormat.CSV -> exportManager.exportCsv(
+                                cycle = currentCycle!!,
+                                expenses = exportData.expenses,
+                                incomes = exportData.incomes,
+                                categories = exportData.categories
+                            )
+                            ExportFormat.PDF -> exportManager.exportPdf(
+                                cycle = currentCycle!!,
+                                expenses = exportData.expenses,
+                                incomes = exportData.incomes,
+                                categories = exportData.categories
+                            )
+                        }
+                    }
+
+                    context.startActivity(Intent.createChooser(intent, "Exporter"))
+                }
             }
         )
     }

@@ -10,11 +10,14 @@ import com.pecule.app.data.repository.IExpenseRepository
 import com.pecule.app.data.repository.IIncomeRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import com.pecule.app.data.local.database.entity.Expense
+import com.pecule.app.data.local.database.entity.Income
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
@@ -128,5 +131,33 @@ class StatisticsViewModel @Inject constructor(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5000),
         initialValue = 0.0
+    )
+
+    suspend fun getExportData(): ExportData {
+        val cycle = _selectedCycle.value
+        val expenses = if (cycle != null) {
+            expenseRepository.getByCycleId(cycle.id).first()
+        } else {
+            emptyList()
+        }
+        val incomes = if (cycle != null) {
+            incomeRepository.getByCycleId(cycle.id).first()
+        } else {
+            emptyList()
+        }
+        val categoryList = categories.value
+        val categoryMap = categoryList.associateBy { it.id }
+
+        return ExportData(
+            expenses = expenses,
+            incomes = incomes,
+            categories = categoryMap
+        )
+    }
+
+    data class ExportData(
+        val expenses: List<Expense>,
+        val incomes: List<Income>,
+        val categories: Map<Long, CategoryEntity>
     )
 }

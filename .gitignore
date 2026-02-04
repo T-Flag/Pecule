@@ -32,3 +32,8 @@ local.properties
 
 # Log Files
 *.log
+
+# Signing keys (never commit!)
+*.jks
+*.keystore
+signing.properties

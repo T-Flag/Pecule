@@ -1,0 +1,4 @@
+storeFile=CHEMIN_VERS_VOTRE_KEYSTORE.jks
+storePassword=VOTRE_MOT_DE_PASSE
+keyAlias=pecule
+keyPassword=VOTRE_MOT_DE_PASSE

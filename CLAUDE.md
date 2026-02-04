@@ -117,9 +117,10 @@ Unit tests are in `app/src/test/java/com/pecule/app/`:
 | `BudgetSwipeDeleteTest.kt` | 5 | Swipe to delete transactions |
 | `BudgetSwipeEditTest.kt` | 6 | Swipe to edit transactions |
 | `ProfileViewModelTest.kt` | 9 | Profile screen logic |
+| `CategoriesViewModelTest.kt` | 11 | Categories CRUD and validation |
 | `StatisticsViewModelTest.kt` | 9 | Statistics screen logic |
 
-**Total : 153 tests**
+**Total : 164 tests**
 
 Use JUnit 4 assertions. For coroutines, use `kotlinx-coroutines-test` with `runTest`.
 Fake repositories are in test directories for mocking.
@@ -186,6 +187,7 @@ Categories are initialized by `CategoryInitializer.kt` on first app launch.
 | `AddTransactionDialog` | Universal dialog for create/edit transactions |
 | `DonutChart` | Canvas donut chart for category breakdown |
 | `NewSalaryDialog` | Dialog for creating new budget cycle |
+| `CategoryDialog` | Dialog for create/edit categories with color/icon picker |
 
 ## Screens (`ui/screens/`)
 
@@ -194,7 +196,8 @@ Categories are initialized by `CategoryInitializer.kt` on first app launch.
 | Dashboard | Balance card, gauge, recent transactions, FAB |
 | Budget | 3 tabs, transaction lists, totals, edit/delete, FAB |
 | Statistics | Donut chart, cycle selector, category legend, summary |
-| Profile | Edit name, theme selector, new salary button |
+| Profile | Edit name, theme selector, new salary button, manage categories |
+| Categories | Category list, swipe edit/delete, FAB for new, color/icon picker |
 
 ## Theme System
 
@@ -220,7 +223,8 @@ PeculeTheme accepts `themePreference` parameter and applies the correct color sc
 - Statistics screen: DonutChart, cycle selector, category legend, summary
 - CycleManager: create new cycle, auto-duplicate fixed expenses/incomes
 - CategoryEntity migration: categories stored in Room database
-- 153 unit tests passing
+- Custom categories UI: create, edit, delete with color/icon picker
+- 164 unit tests passing
 
 ### App Features Complete 🎉
 - Full budget cycle management

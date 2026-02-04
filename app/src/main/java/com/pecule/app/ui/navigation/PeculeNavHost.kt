@@ -7,6 +7,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.pecule.app.ui.screens.budget.BudgetScreen
 import com.pecule.app.ui.screens.dashboard.DashboardScreen
+import com.pecule.app.ui.screens.profile.CategoriesScreen
 import com.pecule.app.ui.screens.profile.ProfileScreen
 import com.pecule.app.ui.screens.statistics.StatisticsScreen
 
@@ -35,6 +36,16 @@ fun PeculeNavHost(
         }
         composable(Routes.Profile.route) {
             ProfileScreen(
+                onNavigateBack = {
+                    navController.popBackStack()
+                },
+                onNavigateToCategories = {
+                    navController.navigate(Routes.Categories.route)
+                }
+            )
+        }
+        composable(Routes.Categories.route) {
+            CategoriesScreen(
                 onNavigateBack = {
                     navController.popBackStack()
                 }

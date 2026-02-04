@@ -15,6 +15,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.pecule.app.data.local.datastore.ThemePreference
 import com.pecule.app.data.repository.IUserPreferencesRepository
+import com.pecule.app.domain.CategoryInitializer
 import com.pecule.app.ui.navigation.BottomNavBar
 import com.pecule.app.ui.navigation.PeculeNavHost
 import com.pecule.app.ui.navigation.Routes
@@ -23,6 +24,7 @@ import com.pecule.app.ui.screens.onboarding.OnboardingViewModel
 import com.pecule.app.ui.theme.PeculeTheme
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -31,9 +33,17 @@ class MainActivity : ComponentActivity() {
     @Inject
     lateinit var userPreferencesRepository: IUserPreferencesRepository
 
+    @Inject
+    lateinit var categoryInitializer: CategoryInitializer
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+
+        // Initialize default categories if needed
+        kotlinx.coroutines.MainScope().launch {
+            categoryInitializer.initializeDefaultCategories()
+        }
         setContent {
             val themePreference by userPreferencesRepository.userPreferences
                 .map { it.theme }
@@ -47,7 +57,7 @@ class MainActivity : ComponentActivity() {
                 val currentBackStackEntry by navController.currentBackStackEntryAsState()
                 val currentRoute = currentBackStackEntry?.destination?.route
 
-                val showBottomBar = currentRoute != Routes.Profile.route
+                val showBottomBar = currentRoute != Routes.Profile.route && currentRoute != Routes.Categories.route
 
                 Scaffold(
                     modifier = Modifier.fillMaxSize(),

@@ -17,6 +17,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Category
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -57,6 +58,7 @@ import com.pecule.app.ui.theme.PeculeTheme
 @Composable
 fun ProfileScreen(
     onNavigateBack: () -> Unit,
+    onNavigateToCategories: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: ProfileViewModel = hiltViewModel(),
     newSalaryViewModel: NewSalaryViewModel = hiltViewModel()
@@ -124,6 +126,7 @@ fun ProfileScreen(
             selectedTheme = theme,
             onThemeChange = { viewModel.updateTheme(it) },
             onNewSalaryClick = { showNewSalaryDialog = true },
+            onCategoriesClick = onNavigateToCategories,
             modifier = Modifier.padding(paddingValues)
         )
     }
@@ -147,6 +150,7 @@ private fun ProfileContent(
     selectedTheme: ThemePreference,
     onThemeChange: (ThemePreference) -> Unit,
     onNewSalaryClick: () -> Unit,
+    onCategoriesClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val scrollState = rememberScrollState()
@@ -219,6 +223,38 @@ private fun ProfileContent(
                 modifier = Modifier.padding(end = 8.dp)
             )
             Text("Nouveau salaire")
+        }
+
+        Spacer(modifier = Modifier.height(32.dp))
+
+        // Section Catégories
+        Text(
+            text = "Catégories",
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.SemiBold,
+            color = MaterialTheme.colorScheme.onBackground
+        )
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Text(
+            text = "Personnalisez les catégories de dépenses selon vos besoins.",
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        OutlinedButton(
+            onClick = onCategoriesClick,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Icon(
+                imageVector = Icons.Default.Category,
+                contentDescription = null,
+                modifier = Modifier.padding(end = 8.dp)
+            )
+            Text("Gérer les catégories")
         }
 
         Spacer(modifier = Modifier.height(32.dp))
@@ -332,7 +368,8 @@ private fun ProfileContentPreview() {
             onSaveFirstName = {},
             selectedTheme = ThemePreference.AUTO,
             onThemeChange = {},
-            onNewSalaryClick = {}
+            onNewSalaryClick = {},
+            onCategoriesClick = {}
         )
     }
 }
@@ -348,7 +385,8 @@ private fun ProfileContentChangedPreview() {
             onSaveFirstName = {},
             selectedTheme = ThemePreference.DARK,
             onThemeChange = {},
-            onNewSalaryClick = {}
+            onNewSalaryClick = {},
+            onCategoriesClick = {}
         )
     }
 }
@@ -364,7 +402,8 @@ private fun ProfileContentDarkPreview() {
             onSaveFirstName = {},
             selectedTheme = ThemePreference.DARK,
             onThemeChange = {},
-            onNewSalaryClick = {}
+            onNewSalaryClick = {},
+            onCategoriesClick = {}
         )
     }
 }

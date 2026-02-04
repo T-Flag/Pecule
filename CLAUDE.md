@@ -44,6 +44,9 @@ The project follows **Clean Architecture** with three layers:
 - `Transaction.kt` - Data class pour l'affichage unifié dépenses/revenus
 - `CycleManager.kt` - Création de cycles et duplication des charges fixes
 - `CategoryInitializer.kt` - Initialisation des 9 catégories par défaut
+- `CsvExporter.kt` - Génération de fichiers CSV
+- `PdfExporter.kt` - Génération de rapports PDF A4
+- `ExportManager.kt` - Gestion de la création de fichiers et partage Android
 
 ### UI Layer (`ui/`)
 - **Jetpack Compose** screens in `screens/` subdirectories
@@ -186,10 +189,15 @@ Categories are initialized by `CategoryInitializer.kt` on first app launch.
 | `SemiCircularGauge` | Canvas gauge showing percentage (0-100%) |
 | `BalanceCard` | Card with balance, gauge, and percentage text |
 | `TransactionItem` | List item for expense/income display |
+| `SwipeableTransactionItem` | TransactionItem avec swipe left (supprimer) et right (modifier) |
 | `AddTransactionDialog` | Universal dialog for create/edit transactions |
+| `DeleteConfirmationDialog` | Dialog de confirmation avant suppression |
 | `DonutChart` | Canvas donut chart for category breakdown |
 | `NewSalaryDialog` | Dialog for creating new budget cycle |
 | `CategoryDialog` | Dialog for create/edit categories with color/icon picker |
+| `ExportDialog` | Dialog de choix format export (CSV/PDF) |
+| `ShimmerEffect` | Animation shimmer réutilisable pour les états de chargement |
+| `LoadingPlaceholders` | Placeholders shimmer (BalanceCard, TransactionItem, DonutChart) |
 
 ## Screens (`ui/screens/`)
 
@@ -237,3 +245,11 @@ PeculeTheme accepts `themePreference` parameter and applies the correct color sc
 - Visual statistics with donut chart
 - Theme customization (Auto/Light/Dark)
 - Data persistence with Room & DataStore
+- CSV and PDF export
+
+## CI/CD
+
+GitHub Actions workflow in `.github/workflows/android-ci.yml`:
+- Triggers on push and PR to main
+- Runs all unit tests with `./gradlew test`
+- Uploads test results as artifacts

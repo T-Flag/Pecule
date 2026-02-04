@@ -39,10 +39,11 @@ The project follows **Clean Architecture** with three layers:
 
 ### Domain Layer (`domain/`)
 - Business models and logic
-- Category enum with French labels and Material icons
+- Category enum (legacy) + CategoryEntity (new, customizable)
 - `BalanceCalculator.kt` - Calculs de solde et pourcentage consommé
 - `Transaction.kt` - Data class pour l'affichage unifié dépenses/revenus
 - `CycleManager.kt` - Création de cycles et duplication des charges fixes
+- `CategoryInitializer.kt` - Initialisation des 9 catégories par défaut
 
 ### UI Layer (`ui/`)
 - **Jetpack Compose** screens in `screens/` subdirectories
@@ -113,8 +114,9 @@ Unit tests are in `app/src/test/java/com/pecule/app/`:
 | `CycleManagerTest.kt` | 10 | Cycle creation and duplication |
 | `BudgetSwipeDeleteTest.kt` | 5 | Swipe to delete transactions |
 | `BudgetSwipeEditTest.kt` | 6 | Swipe to edit transactions |
+| `CategoryRepositoryTest.kt` | 7 | Category CRUD and protection |
 
-**Total : 141 tests**
+**Total : 148 tests**
 
 Use JUnit 4 assertions. For coroutines, use `kotlinx-coroutines-test` with `runTest`.
 Fake repositories are in test directories for mocking.

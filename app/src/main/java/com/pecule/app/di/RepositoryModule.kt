@@ -1,8 +1,10 @@
 package com.pecule.app.di
 
 import com.pecule.app.data.repository.BudgetCycleRepository
+import com.pecule.app.data.repository.CategoryRepository
 import com.pecule.app.data.repository.ExpenseRepository
 import com.pecule.app.data.repository.IBudgetCycleRepository
+import com.pecule.app.data.repository.ICategoryRepository
 import com.pecule.app.data.repository.IExpenseRepository
 import com.pecule.app.data.repository.IIncomeRepository
 import com.pecule.app.data.repository.IUserPreferencesRepository
@@ -41,4 +43,10 @@ abstract class RepositoryModule {
     abstract fun bindIncomeRepository(
         impl: IncomeRepository
     ): IIncomeRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindCategoryRepository(
+        impl: CategoryRepository
+    ): ICategoryRepository
 }

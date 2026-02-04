@@ -47,6 +47,8 @@ The project follows **Clean Architecture** with three layers:
 - `CsvExporter.kt` - Génération de fichiers CSV
 - `PdfExporter.kt` - Génération de rapports PDF A4
 - `ExportManager.kt` - Gestion de la création de fichiers et partage Android
+- `BalanceHistoryCalculator.kt` - Calcul de l'évolution du solde jour par jour
+- `BudgetAlertCalculator.kt` - Calcul des niveaux d'alerte budget (NONE, WARNING, DANGER, EXCEEDED)
 
 ### UI Layer (`ui/`)
 - **Jetpack Compose** screens in `screens/` subdirectories
@@ -124,8 +126,10 @@ Unit tests are in `app/src/test/java/com/pecule/app/`:
 | `StatisticsViewModelTest.kt` | 11 | Statistics screen logic |
 | `CsvExporterTest.kt` | 10 | CSV export format |
 | `PdfExporterTest.kt` | 8 | PDF export data preparation |
+| `BalanceHistoryCalculatorTest.kt` | 7 | Balance history calculation |
+| `BudgetAlertCalculatorTest.kt` | 16 | Budget alert threshold tests |
 
-**Total : 187 tests**
+**Total : ~200 tests**
 
 Use JUnit 4 assertions. For coroutines, use `kotlinx-coroutines-test` with `runTest`.
 Fake repositories are in test directories for mocking.
@@ -198,6 +202,9 @@ Categories are initialized by `CategoryInitializer.kt` on first app launch.
 | `ExportDialog` | Dialog de choix format export (CSV/PDF) |
 | `ShimmerEffect` | Animation shimmer réutilisable pour les états de chargement |
 | `LoadingPlaceholders` | Placeholders shimmer (BalanceCard, TransactionItem, DonutChart) |
+| `LineChart` | Canvas line chart for balance history evolution |
+| `BudgetAlertBanner` | Animated warning banner with dismiss button |
+| `EmptyStateView` | Illustrated empty state with icon, title, subtitle and optional action button |
 
 ## Screens (`ui/screens/`)
 
@@ -205,7 +212,7 @@ Categories are initialized by `CategoryInitializer.kt` on first app launch.
 |--------|----------|
 | Dashboard | Balance card, gauge, recent transactions, FAB |
 | Budget | 3 tabs, transaction lists, totals, edit/delete, FAB |
-| Statistics | Donut chart, cycle selector, category legend, summary |
+| Statistics | Donut chart, cycle selector, category legend, summary, balance history line chart |
 | Profile | Edit name, theme selector, new salary button, manage categories |
 | Categories | Category list, swipe edit/delete, FAB for new, color/icon picker |
 
@@ -236,7 +243,16 @@ PeculeTheme accepts `themePreference` parameter and applies the correct color sc
 - Custom categories UI: create, edit, delete with color/icon picker
 - Loading states with shimmer placeholders on all screens
 - Export CSV and PDF with format chooser dialog
-- 187 unit tests passing
+- Balance history line chart in Statistics
+- Budget alert system with warning banners
+- Illustrated empty states on all screens
+- Swipe to edit and delete transactions
+- Delete confirmation dialog
+- Animated gauge and donut chart
+- Release build configuration (R8, ProGuard, signing, splash screen)
+- Privacy policy page (GitHub Pages)
+- App icon and Play Store assets
+- ~200 unit tests passing
 
 ### App Features Complete 🎉
 - Full budget cycle management

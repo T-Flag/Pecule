@@ -47,6 +47,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.pecule.app.data.local.database.entity.BudgetCycle
 import com.pecule.app.data.local.database.entity.CategoryEntity
 import com.pecule.app.domain.ExportManager
+import com.pecule.app.domain.BalancePoint
+import com.pecule.app.ui.components.BalanceHistoryCard
 import com.pecule.app.ui.components.CategoryColors
 import com.pecule.app.ui.components.DonutChart
 import com.pecule.app.ui.components.DonutChartPlaceholder
@@ -73,6 +75,7 @@ fun StatisticsScreen(
     val totalExpenses by viewModel.totalExpenses.collectAsState()
     val totalIncomes by viewModel.totalIncomes.collectAsState()
     val balance by viewModel.balance.collectAsState()
+    val balanceHistory by viewModel.balanceHistory.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
 
     var showExportDialog by remember { mutableStateOf(false) }
@@ -84,6 +87,7 @@ fun StatisticsScreen(
         totalExpenses = totalExpenses,
         totalIncomes = totalIncomes,
         balance = balance,
+        balanceHistory = balanceHistory,
         isLoading = isLoading,
         onCycleSelected = viewModel::selectCycle,
         onExportClick = { showExportDialog = true },
@@ -131,6 +135,7 @@ private fun StatisticsContent(
     totalExpenses: Double,
     totalIncomes: Double,
     balance: Double,
+    balanceHistory: List<BalancePoint>,
     isLoading: Boolean = false,
     onCycleSelected: (BudgetCycle) -> Unit,
     onExportClick: () -> Unit = {},
@@ -201,6 +206,12 @@ private fun StatisticsContent(
             totalExpenses = totalExpenses,
             totalIncomes = totalIncomes,
             balance = balance
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        BalanceHistoryCard(
+            balanceHistory = balanceHistory
         )
     }
 }

@@ -4,14 +4,16 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.pecule.app.data.local.database.entity.BudgetCycle
 import com.pecule.app.data.local.database.entity.CategoryEntity
+import com.pecule.app.data.local.database.entity.Expense
+import com.pecule.app.data.local.database.entity.Income
 import com.pecule.app.data.repository.IBudgetCycleRepository
 import com.pecule.app.data.repository.ICategoryRepository
 import com.pecule.app.data.repository.IExpenseRepository
 import com.pecule.app.data.repository.IIncomeRepository
+import com.pecule.app.domain.BalanceHistoryCalculator
+import com.pecule.app.domain.BalancePoint
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import com.pecule.app.data.local.database.entity.Expense
-import com.pecule.app.data.local.database.entity.Income
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -131,6 +133,24 @@ class StatisticsViewModel @Inject constructor(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5000),
         initialValue = 0.0
+    )
+
+    private val balanceHistoryCalculator = BalanceHistoryCalculator()
+
+    val balanceHistory: StateFlow<List<BalancePoint>> = combine(
+        _selectedCycle,
+        expensesForSelectedCycle,
+        incomesForSelectedCycle
+    ) { cycle, expenses, incomes ->
+        if (cycle == null) {
+            emptyList()
+        } else {
+            balanceHistoryCalculator.calculate(cycle, expenses, incomes)
+        }
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = emptyList()
     )
 
     suspend fun getExportData(): ExportData {

@@ -42,6 +42,7 @@ The project follows **Clean Architecture** with three layers:
 - Category enum with French labels and Material icons
 - `BalanceCalculator.kt` - Calculs de solde et pourcentage consommé
 - `Transaction.kt` - Data class pour l'affichage unifié dépenses/revenus
+- `CycleManager.kt` - Création de cycles et duplication des charges fixes
 
 ### UI Layer (`ui/`)
 - **Jetpack Compose** screens in `screens/` subdirectories
@@ -109,8 +110,9 @@ Unit tests are in `app/src/test/java/com/pecule/app/`:
 | `BudgetViewModelTest.kt` | 10 | Budget screen logic |
 | `ProfileViewModelTest.kt` | 9 | Profile screen logic |
 | `StatisticsViewModelTest.kt` | 9 | Statistics screen logic |
+| `CycleManagerTest.kt` | 10 | Cycle creation and duplication |
 
-**Total : 125 tests**
+**Total : 135 tests**
 
 Use JUnit 4 assertions. For coroutines, use `kotlinx-coroutines-test` with `runTest`.
 Fake repositories are in test directories for mocking.
@@ -172,6 +174,8 @@ When a new salary is added:
 | `BalanceCard` | Card with balance, gauge, and percentage text |
 | `TransactionItem` | List item for expense/income display |
 | `AddTransactionDialog` | Universal dialog for create/edit transactions |
+| `DonutChart` | Canvas donut chart for category breakdown |
+| `NewSalaryDialog` | Dialog for creating new budget cycle |
 
 ## Screens (`ui/screens/`)
 
@@ -179,8 +183,8 @@ When a new salary is added:
 |--------|----------|
 | Dashboard | Balance card, gauge, recent transactions, FAB |
 | Budget | 3 tabs, transaction lists, totals, edit/delete, FAB |
-| Statistics | (TODO) Donut chart, cycle selector |
-| Profile | Edit name, theme selector (Auto/Light/Dark) |
+| Statistics | Donut chart, cycle selector, category legend, summary |
+| Profile | Edit name, theme selector, new salary button |
 
 ## Theme System
 
@@ -202,10 +206,15 @@ PeculeTheme accepts `themePreference` parameter and applies the correct color sc
 - Dashboard: BalanceCard, SemiCircularGauge, TransactionItem, FAB
 - AddTransactionDialog (create/edit expenses and incomes)
 - Budget screen: 3 tabs, totals, edit/delete
-- Profile screen: edit name, theme selector
-- StatisticsViewModel (logic ready)
-- 125 unit tests passing
+- Profile screen: edit name, theme selector, new salary button
+- Statistics screen: DonutChart, cycle selector, category legend, summary
+- CycleManager: create new cycle, auto-duplicate fixed expenses/incomes
+- 135 unit tests passing
 
-### Todo 📋
-- Statistics screen UI (donut chart, cycle selector)
-- Add new salary (create new cycle, auto-duplicate fixed items)
+### App Features Complete 🎉
+- Full budget cycle management
+- Expense tracking (fixed & variable)
+- Income tracking (fixed & variable)
+- Visual statistics with donut chart
+- Theme customization (Auto/Light/Dark)
+- Data persistence with Room & DataStore

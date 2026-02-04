@@ -41,6 +41,7 @@ import com.pecule.app.domain.Transaction
 import com.pecule.app.ui.components.AddTransactionDialog
 import com.pecule.app.ui.components.AddTransactionUiState
 import com.pecule.app.ui.components.AddTransactionViewModel
+import com.pecule.app.ui.components.DeleteConfirmationDialog
 import com.pecule.app.ui.components.TransactionItem
 import com.pecule.app.ui.theme.PeculeTheme
 import kotlinx.coroutines.launch
@@ -69,6 +70,10 @@ fun BudgetScreen(
     // Context menu state
     var contextMenuExpense by remember { mutableStateOf<Expense?>(null) }
     var contextMenuIncome by remember { mutableStateOf<Income?>(null) }
+
+    // Delete confirmation state
+    var expenseToDelete by remember { mutableStateOf<Expense?>(null) }
+    var incomeToDelete by remember { mutableStateOf<Income?>(null) }
 
     val currentTotal = when (selectedTab) {
         0 -> totalFixed
@@ -149,7 +154,7 @@ fun BudgetScreen(
                     },
                     onDelete = { expense ->
                         contextMenuExpense = null
-                        viewModel.deleteExpense(expense)
+                        expenseToDelete = expense
                     }
                 )
                 1 -> ExpenseList(
@@ -165,7 +170,7 @@ fun BudgetScreen(
                     },
                     onDelete = { expense ->
                         contextMenuExpense = null
-                        viewModel.deleteExpense(expense)
+                        expenseToDelete = expense
                     }
                 )
                 2 -> IncomeList(
@@ -181,7 +186,7 @@ fun BudgetScreen(
                     },
                     onDelete = { income ->
                         contextMenuIncome = null
-                        viewModel.deleteIncome(income)
+                        incomeToDelete = income
                     }
                 )
             }
@@ -205,6 +210,34 @@ fun BudgetScreen(
             onSaveSuccess = {
                 showAddDialog = false
                 editingTransaction = null
+            }
+        )
+    }
+
+    // Delete Confirmation Dialog for Expense
+    expenseToDelete?.let { expense ->
+        DeleteConfirmationDialog(
+            transactionLabel = expense.label,
+            onConfirm = {
+                viewModel.deleteExpense(expense)
+                expenseToDelete = null
+            },
+            onDismiss = {
+                expenseToDelete = null
+            }
+        )
+    }
+
+    // Delete Confirmation Dialog for Income
+    incomeToDelete?.let { income ->
+        DeleteConfirmationDialog(
+            transactionLabel = income.label,
+            onConfirm = {
+                viewModel.deleteIncome(income)
+                incomeToDelete = null
+            },
+            onDismiss = {
+                incomeToDelete = null
             }
         )
     }

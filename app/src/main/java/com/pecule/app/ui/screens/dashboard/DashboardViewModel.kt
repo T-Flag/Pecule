@@ -20,6 +20,7 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -104,6 +105,18 @@ class DashboardViewModel @Inject constructor(
             started = SharingStarted.WhileSubscribed(5000),
             initialValue = emptyList()
         )
+
+    fun deleteExpense(expense: Expense) {
+        viewModelScope.launch {
+            expenseRepository.delete(expense)
+        }
+    }
+
+    fun deleteIncome(income: Income) {
+        viewModelScope.launch {
+            incomeRepository.delete(income)
+        }
+    }
 
     private fun Expense.toTransaction() = Transaction(
         id = id,

@@ -1,6 +1,8 @@
 package com.pecule.app.ui.screens.dashboard
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -41,13 +43,17 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.pecule.app.data.local.database.entity.Category
+import com.pecule.app.data.local.database.entity.Expense
+import com.pecule.app.data.local.database.entity.Income
 import com.pecule.app.domain.Transaction
 import com.pecule.app.ui.components.AddTransactionDialog
 import com.pecule.app.ui.components.AddTransactionUiState
 import com.pecule.app.ui.components.AddTransactionViewModel
 import com.pecule.app.ui.components.BalanceCard
+import com.pecule.app.ui.components.DeleteConfirmationDialog
 import com.pecule.app.ui.components.TransactionItem
 import com.pecule.app.ui.theme.PeculeTheme
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 
@@ -66,6 +72,11 @@ fun DashboardScreen(
     var showFabMenu by remember { mutableStateOf(false) }
     var showAddDialog by remember { mutableStateOf(false) }
     var isExpenseDialog by remember { mutableStateOf(true) }
+
+    // Context menu and delete confirmation state
+    var contextMenuTransaction by remember { mutableStateOf<Transaction?>(null) }
+    var transactionToDelete by remember { mutableStateOf<Transaction?>(null) }
+    val scope = rememberCoroutineScope()
 
     Scaffold(
         modifier = modifier,
@@ -114,7 +125,36 @@ fun DashboardScreen(
             budgetPercentageUsed = budgetPercentageUsed,
             recentTransactions = recentTransactions,
             onNavigateToProfile = onNavigateToProfile,
+            contextMenuTransaction = contextMenuTransaction,
+            onContextMenuOpen = { contextMenuTransaction = it },
+            onContextMenuDismiss = { contextMenuTransaction = null },
+            onDeleteRequest = { transaction ->
+                contextMenuTransaction = null
+                transactionToDelete = transaction
+            },
             modifier = Modifier.padding(paddingValues)
+        )
+    }
+
+    // Delete Confirmation Dialog
+    transactionToDelete?.let { transaction ->
+        DeleteConfirmationDialog(
+            transactionLabel = transaction.label,
+            onConfirm = {
+                scope.launch {
+                    if (transaction.isExpense) {
+                        val expense = viewModel.expenseRepository.getById(transaction.id).first()
+                        expense?.let { viewModel.deleteExpense(it) }
+                    } else {
+                        val income = viewModel.incomeRepository.getById(transaction.id).first()
+                        income?.let { viewModel.deleteIncome(it) }
+                    }
+                }
+                transactionToDelete = null
+            },
+            onDismiss = {
+                transactionToDelete = null
+            }
         )
     }
 
@@ -171,6 +211,7 @@ fun DashboardScreen(
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun DashboardContent(
     userName: String,
@@ -178,6 +219,10 @@ private fun DashboardContent(
     budgetPercentageUsed: Float,
     recentTransactions: List<Transaction>,
     onNavigateToProfile: () -> Unit,
+    contextMenuTransaction: Transaction? = null,
+    onContextMenuOpen: (Transaction) -> Unit = {},
+    onContextMenuDismiss: () -> Unit = {},
+    onDeleteRequest: (Transaction) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -257,7 +302,28 @@ private fun DashboardContent(
                     items = recentTransactions,
                     key = { "${it.id}_${it.isExpense}" }
                 ) { transaction ->
-                    TransactionItem(transaction = transaction)
+                    Box {
+                        TransactionItem(
+                            transaction = transaction,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .combinedClickable(
+                                    onClick = { },
+                                    onLongClick = { onContextMenuOpen(transaction) }
+                                )
+                        )
+
+                        DropdownMenu(
+                            expanded = contextMenuTransaction?.id == transaction.id &&
+                                    contextMenuTransaction?.isExpense == transaction.isExpense,
+                            onDismissRequest = onContextMenuDismiss
+                        ) {
+                            DropdownMenuItem(
+                                text = { Text("Supprimer") },
+                                onClick = { onDeleteRequest(transaction) }
+                            )
+                        }
+                    }
                 }
             }
         }

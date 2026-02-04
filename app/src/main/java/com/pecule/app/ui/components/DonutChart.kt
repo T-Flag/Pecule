@@ -1,11 +1,15 @@
 package com.pecule.app.ui.components
 
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -46,6 +50,15 @@ fun DonutChart(
     val total = data.values.sum()
     val currencyFormat = NumberFormat.getCurrencyInstance(Locale.FRANCE)
 
+    val animationProgress by animateFloatAsState(
+        targetValue = if (total > 0) 1f else 0f,
+        animationSpec = tween(
+            durationMillis = 1000,
+            easing = FastOutSlowInEasing
+        ),
+        label = "donut_animation"
+    )
+
     Box(
         modifier = modifier.size(size),
         contentAlignment = Alignment.Center
@@ -59,7 +72,7 @@ fun DonutChart(
                 )
 
                 data.forEach { (category, amount) ->
-                    val sweepAngle = (amount / total * 360f).toFloat()
+                    val sweepAngle = (amount / total * 360f * animationProgress).toFloat()
                     drawArc(
                         color = CategoryColors.getColor(category),
                         startAngle = startAngle,
@@ -83,7 +96,7 @@ fun DonutChart(
         }
 
         Text(
-            text = currencyFormat.format(total),
+            text = currencyFormat.format(total * animationProgress),
             style = MaterialTheme.typography.titleLarge,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.onSurface

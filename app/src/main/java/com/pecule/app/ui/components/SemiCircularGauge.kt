@@ -1,10 +1,14 @@
 package com.pecule.app.ui.components
 
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
@@ -23,6 +27,15 @@ fun SemiCircularGauge(
     progressColor: Color = MaterialTheme.colorScheme.primary
 ) {
     val clampedPercentage = percentage.coerceIn(0f, 1f)
+
+    val animatedPercentage by animateFloatAsState(
+        targetValue = clampedPercentage,
+        animationSpec = tween(
+            durationMillis = 1000,
+            easing = FastOutSlowInEasing
+        ),
+        label = "gauge_animation"
+    )
 
     Canvas(
         modifier = modifier
@@ -47,12 +60,12 @@ fun SemiCircularGauge(
             style = Stroke(width = strokeWidth, cap = StrokeCap.Round)
         )
 
-        // Progress arc
-        if (clampedPercentage > 0f) {
+        // Progress arc with animation
+        if (animatedPercentage > 0f) {
             drawArc(
                 color = progressColor,
                 startAngle = 180f,
-                sweepAngle = 180f * clampedPercentage,
+                sweepAngle = 180f * animatedPercentage,
                 useCenter = false,
                 topLeft = topLeft,
                 size = arcSize,

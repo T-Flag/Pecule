@@ -42,6 +42,7 @@ import com.pecule.app.ui.components.AddTransactionDialog
 import com.pecule.app.ui.components.AddTransactionUiState
 import com.pecule.app.ui.components.AddTransactionViewModel
 import com.pecule.app.ui.components.DeleteConfirmationDialog
+import com.pecule.app.ui.components.SwipeableTransactionItem
 import com.pecule.app.ui.components.TransactionItem
 import com.pecule.app.ui.theme.PeculeTheme
 import kotlinx.coroutines.launch
@@ -348,30 +349,35 @@ private fun ExpenseList(
                 items = expenses,
                 key = { it.id }
             ) { expense ->
-                Box {
-                    TransactionItem(
-                        transaction = expense.toTransaction(),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .combinedClickable(
-                                onClick = { },
-                                onLongClick = { onContextMenuOpen(expense) }
-                            )
-                            .padding(horizontal = 16.dp)
-                    )
+                SwipeableTransactionItem(
+                    transaction = expense.toTransaction(),
+                    onSwipeToDelete = { onDelete(expense) }
+                ) {
+                    Box {
+                        TransactionItem(
+                            transaction = expense.toTransaction(),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .combinedClickable(
+                                    onClick = { },
+                                    onLongClick = { onContextMenuOpen(expense) }
+                                )
+                                .padding(horizontal = 16.dp)
+                        )
 
-                    DropdownMenu(
-                        expanded = contextMenuExpense?.id == expense.id,
-                        onDismissRequest = onContextMenuDismiss
-                    ) {
-                        DropdownMenuItem(
-                            text = { Text("Modifier") },
-                            onClick = { onEdit(expense) }
-                        )
-                        DropdownMenuItem(
-                            text = { Text("Supprimer") },
-                            onClick = { onDelete(expense) }
-                        )
+                        DropdownMenu(
+                            expanded = contextMenuExpense?.id == expense.id,
+                            onDismissRequest = onContextMenuDismiss
+                        ) {
+                            DropdownMenuItem(
+                                text = { Text("Modifier") },
+                                onClick = { onEdit(expense) }
+                            )
+                            DropdownMenuItem(
+                                text = { Text("Supprimer") },
+                                onClick = { onDelete(expense) }
+                            )
+                        }
                     }
                 }
             }
@@ -411,30 +417,35 @@ private fun IncomeList(
                 items = incomes,
                 key = { it.id }
             ) { income ->
-                Box {
-                    TransactionItem(
-                        transaction = income.toTransaction(),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .combinedClickable(
-                                onClick = { },
-                                onLongClick = { onContextMenuOpen(income) }
-                            )
-                            .padding(horizontal = 16.dp)
-                    )
+                SwipeableTransactionItem(
+                    transaction = income.toTransaction(),
+                    onSwipeToDelete = { onDelete(income) }
+                ) {
+                    Box {
+                        TransactionItem(
+                            transaction = income.toTransaction(),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .combinedClickable(
+                                    onClick = { },
+                                    onLongClick = { onContextMenuOpen(income) }
+                                )
+                                .padding(horizontal = 16.dp)
+                        )
 
-                    DropdownMenu(
-                        expanded = contextMenuIncome?.id == income.id,
-                        onDismissRequest = onContextMenuDismiss
-                    ) {
-                        DropdownMenuItem(
-                            text = { Text("Modifier") },
-                            onClick = { onEdit(income) }
-                        )
-                        DropdownMenuItem(
-                            text = { Text("Supprimer") },
-                            onClick = { onDelete(income) }
-                        )
+                        DropdownMenu(
+                            expanded = contextMenuIncome?.id == income.id,
+                            onDismissRequest = onContextMenuDismiss
+                        ) {
+                            DropdownMenuItem(
+                                text = { Text("Modifier") },
+                                onClick = { onEdit(income) }
+                            )
+                            DropdownMenuItem(
+                                text = { Text("Supprimer") },
+                                onClick = { onDelete(income) }
+                            )
+                        }
                     }
                 }
             }

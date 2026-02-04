@@ -51,6 +51,7 @@ import com.pecule.app.ui.components.AddTransactionUiState
 import com.pecule.app.ui.components.AddTransactionViewModel
 import com.pecule.app.ui.components.BalanceCard
 import com.pecule.app.ui.components.DeleteConfirmationDialog
+import com.pecule.app.ui.components.SwipeableTransactionItem
 import com.pecule.app.ui.components.TransactionItem
 import com.pecule.app.ui.theme.PeculeTheme
 import kotlinx.coroutines.flow.first
@@ -302,26 +303,31 @@ private fun DashboardContent(
                     items = recentTransactions,
                     key = { "${it.id}_${it.isExpense}" }
                 ) { transaction ->
-                    Box {
-                        TransactionItem(
-                            transaction = transaction,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .combinedClickable(
-                                    onClick = { },
-                                    onLongClick = { onContextMenuOpen(transaction) }
-                                )
-                        )
-
-                        DropdownMenu(
-                            expanded = contextMenuTransaction?.id == transaction.id &&
-                                    contextMenuTransaction?.isExpense == transaction.isExpense,
-                            onDismissRequest = onContextMenuDismiss
-                        ) {
-                            DropdownMenuItem(
-                                text = { Text("Supprimer") },
-                                onClick = { onDeleteRequest(transaction) }
+                    SwipeableTransactionItem(
+                        transaction = transaction,
+                        onSwipeToDelete = { onDeleteRequest(transaction) }
+                    ) {
+                        Box {
+                            TransactionItem(
+                                transaction = transaction,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .combinedClickable(
+                                        onClick = { },
+                                        onLongClick = { onContextMenuOpen(transaction) }
+                                    )
                             )
+
+                            DropdownMenu(
+                                expanded = contextMenuTransaction?.id == transaction.id &&
+                                        contextMenuTransaction?.isExpense == transaction.isExpense,
+                                onDismissRequest = onContextMenuDismiss
+                            ) {
+                                DropdownMenuItem(
+                                    text = { Text("Supprimer") },
+                                    onClick = { onDeleteRequest(transaction) }
+                                )
+                            }
                         }
                     }
                 }

@@ -2,11 +2,14 @@ package com.pecule.app.ui.components
 
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -28,21 +31,26 @@ import com.pecule.app.domain.Transaction
 fun SwipeableTransactionItem(
     transaction: Transaction,
     onSwipeToDelete: () -> Unit,
+    onSwipeToEdit: () -> Unit = {},
     modifier: Modifier = Modifier,
     content: @Composable () -> Unit
 ) {
     val dismissState = rememberSwipeToDismissBoxState(
         confirmValueChange = { dismissValue ->
-            if (dismissValue == SwipeToDismissBoxValue.EndToStart) {
-                onSwipeToDelete()
-                false // Don't actually dismiss, let the dialog handle it
-            } else {
-                false
+            when (dismissValue) {
+                SwipeToDismissBoxValue.EndToStart -> {
+                    onSwipeToDelete()
+                    false
+                }
+                SwipeToDismissBoxValue.StartToEnd -> {
+                    onSwipeToEdit()
+                    false
+                }
+                else -> false
             }
         }
     )
 
-    // Reset the state after swipe is triggered
     LaunchedEffect(dismissState.currentValue) {
         if (dismissState.currentValue != SwipeToDismissBoxValue.Settled) {
             dismissState.reset()
@@ -55,7 +63,7 @@ fun SwipeableTransactionItem(
         backgroundContent = {
             SwipeBackground(dismissState = dismissState)
         },
-        enableDismissFromStartToEnd = false,
+        enableDismissFromStartToEnd = true,
         enableDismissFromEndToStart = true,
         content = { content() }
     )
@@ -66,27 +74,57 @@ fun SwipeableTransactionItem(
 private fun SwipeBackground(
     dismissState: SwipeToDismissBoxState
 ) {
-    val color by animateColorAsState(
+    val deleteColor by animateColorAsState(
         targetValue = when (dismissState.targetValue) {
             SwipeToDismissBoxValue.EndToStart -> MaterialTheme.colorScheme.error
             else -> Color.Transparent
         },
-        label = "swipe_background_color"
+        label = "delete_background_color"
+    )
+
+    val editColor by animateColorAsState(
+        targetValue = when (dismissState.targetValue) {
+            SwipeToDismissBoxValue.StartToEnd -> MaterialTheme.colorScheme.primary
+            else -> Color.Transparent
+        },
+        label = "edit_background_color"
     )
 
     Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(color)
-            .padding(horizontal = 20.dp),
-        contentAlignment = Alignment.CenterEnd
+        modifier = Modifier.fillMaxSize()
     ) {
-        if (dismissState.targetValue == SwipeToDismissBoxValue.EndToStart) {
-            Icon(
-                imageVector = Icons.Default.Delete,
-                contentDescription = "Supprimer",
-                tint = Color.White
-            )
+        // Edit background (swipe right)
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(editColor)
+                .padding(horizontal = 20.dp),
+            contentAlignment = Alignment.CenterStart
+        ) {
+            if (dismissState.targetValue == SwipeToDismissBoxValue.StartToEnd) {
+                Icon(
+                    imageVector = Icons.Default.Edit,
+                    contentDescription = "Modifier",
+                    tint = Color.White
+                )
+            }
+        }
+
+        // Delete background (swipe left)
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(deleteColor)
+                .padding(horizontal = 20.dp),
+            contentAlignment = Alignment.CenterEnd
+        ) {
+            if (dismissState.targetValue == SwipeToDismissBoxValue.EndToStart) {
+                Icon(
+                    imageVector = Icons.Default.Delete,
+                    contentDescription = "Supprimer",
+                    tint = Color.White
+                )
+            }
         }
     }
 }

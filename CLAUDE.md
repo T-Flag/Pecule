@@ -111,8 +111,10 @@ Unit tests are in `app/src/test/java/com/pecule/app/`:
 | `ProfileViewModelTest.kt` | 9 | Profile screen logic |
 | `StatisticsViewModelTest.kt` | 9 | Statistics screen logic |
 | `CycleManagerTest.kt` | 10 | Cycle creation and duplication |
+| `BudgetSwipeDeleteTest.kt` | 5 | Swipe to delete transactions |
+| `BudgetSwipeEditTest.kt` | 6 | Swipe to edit transactions |
 
-**Total : 135 tests**
+**Total : 141 tests**
 
 Use JUnit 4 assertions. For coroutines, use `kotlinx-coroutines-test` with `runTest`.
 Fake repositories are in test directories for mocking.

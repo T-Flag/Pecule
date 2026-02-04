@@ -351,7 +351,8 @@ private fun ExpenseList(
             ) { expense ->
                 SwipeableTransactionItem(
                     transaction = expense.toTransaction(),
-                    onSwipeToDelete = { onDelete(expense) }
+                    onSwipeToDelete = { onDelete(expense) },
+                    onSwipeToEdit = { onEdit(expense) }
                 ) {
                     Box {
                         TransactionItem(
@@ -419,7 +420,8 @@ private fun IncomeList(
             ) { income ->
                 SwipeableTransactionItem(
                     transaction = income.toTransaction(),
-                    onSwipeToDelete = { onDelete(income) }
+                    onSwipeToDelete = { onDelete(income) },
+                    onSwipeToEdit = { onEdit(income) }
                 ) {
                     Box {
                         TransactionItem(

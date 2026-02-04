@@ -73,6 +73,7 @@ fun DashboardScreen(
     var showFabMenu by remember { mutableStateOf(false) }
     var showAddDialog by remember { mutableStateOf(false) }
     var isExpenseDialog by remember { mutableStateOf(true) }
+    var editingTransaction by remember { mutableStateOf<Transaction?>(null) }
 
     // Context menu and delete confirmation state
     var contextMenuTransaction by remember { mutableStateOf<Transaction?>(null) }
@@ -133,6 +134,12 @@ fun DashboardScreen(
                 contextMenuTransaction = null
                 transactionToDelete = transaction
             },
+            onEditRequest = { transaction ->
+                contextMenuTransaction = null
+                editingTransaction = transaction
+                isExpenseDialog = transaction.isExpense
+                showAddDialog = true
+            },
             modifier = Modifier.padding(paddingValues)
         )
     }
@@ -159,18 +166,18 @@ fun DashboardScreen(
         )
     }
 
-    // Add Transaction Dialog
+    // Add/Edit Transaction Dialog
     if (showAddDialog && currentCycleId != null) {
-        val scope = rememberCoroutineScope()
+        val dialogScope = rememberCoroutineScope()
         var errors by remember { mutableStateOf<List<String>>(emptyList()) }
 
-        val addViewModel = remember(isExpenseDialog, currentCycleId) {
+        val addViewModel = remember(isExpenseDialog, currentCycleId, editingTransaction) {
             AddTransactionViewModel(
                 expenseRepository = viewModel.expenseRepository,
                 incomeRepository = viewModel.incomeRepository,
                 isExpense = isExpenseDialog,
                 cycleId = currentCycleId!!,
-                existingTransaction = null
+                existingTransaction = editingTransaction
             )
         }
 
@@ -195,13 +202,15 @@ fun DashboardScreen(
             onIsFixedChange = { addViewModel.toggleIsFixed() },
             onDismiss = {
                 showAddDialog = false
+                editingTransaction = null
                 errors = emptyList()
             },
             onSave = {
-                scope.launch {
+                dialogScope.launch {
                     val result = addViewModel.save()
                     if (result.isSuccess) {
                         showAddDialog = false
+                        editingTransaction = null
                         errors = emptyList()
                     } else {
                         errors = result.errors
@@ -224,6 +233,7 @@ private fun DashboardContent(
     onContextMenuOpen: (Transaction) -> Unit = {},
     onContextMenuDismiss: () -> Unit = {},
     onDeleteRequest: (Transaction) -> Unit = {},
+    onEditRequest: (Transaction) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -305,7 +315,8 @@ private fun DashboardContent(
                 ) { transaction ->
                     SwipeableTransactionItem(
                         transaction = transaction,
-                        onSwipeToDelete = { onDeleteRequest(transaction) }
+                        onSwipeToDelete = { onDeleteRequest(transaction) },
+                        onSwipeToEdit = { onEditRequest(transaction) }
                     ) {
                         Box {
                             TransactionItem(
@@ -323,6 +334,10 @@ private fun DashboardContent(
                                         contextMenuTransaction?.isExpense == transaction.isExpense,
                                 onDismissRequest = onContextMenuDismiss
                             ) {
+                                DropdownMenuItem(
+                                    text = { Text("Modifier") },
+                                    onClick = { onEditRequest(transaction) }
+                                )
                                 DropdownMenuItem(
                                     text = { Text("Supprimer") },
                                     onClick = { onDeleteRequest(transaction) }

@@ -47,11 +47,14 @@ import com.pecule.app.data.local.database.entity.Expense
 import com.pecule.app.data.local.database.entity.Income
 import com.pecule.app.domain.CategoryInitializer
 import com.pecule.app.domain.Transaction
+import com.pecule.app.domain.BudgetAlert
+import com.pecule.app.domain.BudgetAlertLevel
 import com.pecule.app.ui.components.AddTransactionDialog
 import com.pecule.app.ui.components.AddTransactionUiState
 import com.pecule.app.ui.components.AddTransactionViewModel
 import com.pecule.app.ui.components.BalanceCard
 import com.pecule.app.ui.components.BalanceCardPlaceholder
+import com.pecule.app.ui.components.BudgetAlertBanner
 import com.pecule.app.ui.components.DeleteConfirmationDialog
 import com.pecule.app.ui.components.SwipeableTransactionItem
 import com.pecule.app.ui.components.TransactionItem
@@ -73,9 +76,11 @@ fun DashboardScreen(
     val recentTransactions by viewModel.recentTransactions.collectAsStateWithLifecycle()
     val currentCycleId by viewModel.currentCycleId.collectAsStateWithLifecycle()
     val categories by viewModel.categories.collectAsStateWithLifecycle()
+    val budgetAlert by viewModel.budgetAlert.collectAsStateWithLifecycle()
     val isLoading by viewModel.isLoading.collectAsStateWithLifecycle()
 
     var showFabMenu by remember { mutableStateOf(false) }
+    var alertDismissed by remember { mutableStateOf(false) }
     var showAddDialog by remember { mutableStateOf(false) }
     var isExpenseDialog by remember { mutableStateOf(true) }
     var editingTransaction by remember { mutableStateOf<Transaction?>(null) }
@@ -130,6 +135,9 @@ fun DashboardScreen(
             userName = userName,
             currentBalance = currentBalance,
             budgetPercentageUsed = budgetPercentageUsed,
+            budgetAlert = budgetAlert,
+            alertVisible = !alertDismissed,
+            onAlertDismiss = { alertDismissed = true },
             recentTransactions = recentTransactions,
             isLoading = isLoading,
             onNavigateToProfile = onNavigateToProfile,
@@ -234,6 +242,9 @@ private fun DashboardContent(
     userName: String,
     currentBalance: Double,
     budgetPercentageUsed: Float,
+    budgetAlert: BudgetAlert = BudgetAlert(BudgetAlertLevel.NONE, "", 0),
+    alertVisible: Boolean = true,
+    onAlertDismiss: () -> Unit = {},
     recentTransactions: List<Transaction>,
     isLoading: Boolean = false,
     onNavigateToProfile: () -> Unit,
@@ -289,6 +300,16 @@ private fun DashboardContent(
             BalanceCard(
                 balance = currentBalance,
                 percentageUsed = budgetPercentageUsed
+            )
+        }
+
+        // Budget Alert Banner
+        if (budgetAlert.level != BudgetAlertLevel.NONE) {
+            Spacer(modifier = Modifier.height(12.dp))
+            BudgetAlertBanner(
+                alert = budgetAlert,
+                visible = alertVisible,
+                onDismiss = onAlertDismiss
             )
         }
 

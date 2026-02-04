@@ -12,6 +12,9 @@ import com.pecule.app.data.repository.IExpenseRepository
 import com.pecule.app.data.repository.IIncomeRepository
 import com.pecule.app.data.repository.IUserPreferencesRepository
 import com.pecule.app.domain.BalanceCalculator
+import com.pecule.app.domain.BudgetAlert
+import com.pecule.app.domain.BudgetAlertCalculator
+import com.pecule.app.domain.BudgetAlertLevel
 import com.pecule.app.domain.Transaction
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -109,6 +112,16 @@ class DashboardViewModel @Inject constructor(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),
             initialValue = 0f
+        )
+
+    private val budgetAlertCalculator = BudgetAlertCalculator()
+
+    val budgetAlert: StateFlow<BudgetAlert> = budgetPercentageUsed
+        .map { percentage -> budgetAlertCalculator.calculate((percentage * 100).toDouble()) }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = BudgetAlert(BudgetAlertLevel.NONE, "", 0)
         )
 
     val recentTransactions: StateFlow<List<Transaction>> = combine(

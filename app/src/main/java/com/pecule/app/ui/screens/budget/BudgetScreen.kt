@@ -45,6 +45,7 @@ import com.pecule.app.ui.components.AddTransactionViewModel
 import com.pecule.app.ui.components.DeleteConfirmationDialog
 import com.pecule.app.ui.components.SwipeableTransactionItem
 import com.pecule.app.ui.components.TransactionItem
+import com.pecule.app.ui.components.TransactionListPlaceholder
 import com.pecule.app.ui.theme.PeculeTheme
 import kotlinx.coroutines.launch
 import java.text.NumberFormat
@@ -66,6 +67,7 @@ fun BudgetScreen(
     val totalVariable by viewModel.totalVariable.collectAsStateWithLifecycle()
     val totalIncomes by viewModel.totalIncomes.collectAsStateWithLifecycle()
     val categories by viewModel.categories.collectAsStateWithLifecycle()
+    val isLoading by viewModel.isLoading.collectAsStateWithLifecycle()
 
     var showAddDialog by remember { mutableStateOf(false) }
     var editingTransaction by remember { mutableStateOf<Transaction?>(null) }
@@ -165,59 +167,66 @@ fun BudgetScreen(
             )
 
             // Content based on selected tab
-            when (selectedTab) {
-                0 -> ExpenseList(
-                    expenses = fixedExpenses,
-                    emptyMessage = emptyMessage,
-                    contextMenuExpense = contextMenuExpense,
-                    categories = categories,
-                    onContextMenuOpen = { contextMenuExpense = it },
-                    onContextMenuDismiss = { contextMenuExpense = null },
-                    onEdit = { expense ->
-                        contextMenuExpense = null
-                        editingTransaction = expense.toTransaction()
-                        showAddDialog = true
-                    },
-                    onDelete = { expense ->
-                        contextMenuExpense = null
-                        expenseToDelete = expense
-                    },
-                    getCategoryById = viewModel::getCategoryById
+            if (isLoading) {
+                TransactionListPlaceholder(
+                    itemCount = 5,
+                    modifier = Modifier.padding(horizontal = 16.dp)
                 )
-                1 -> ExpenseList(
-                    expenses = variableExpenses,
-                    emptyMessage = emptyMessage,
-                    contextMenuExpense = contextMenuExpense,
-                    categories = categories,
-                    onContextMenuOpen = { contextMenuExpense = it },
-                    onContextMenuDismiss = { contextMenuExpense = null },
-                    onEdit = { expense ->
-                        contextMenuExpense = null
-                        editingTransaction = expense.toTransaction()
-                        showAddDialog = true
-                    },
-                    onDelete = { expense ->
-                        contextMenuExpense = null
-                        expenseToDelete = expense
-                    },
-                    getCategoryById = viewModel::getCategoryById
-                )
-                2 -> IncomeList(
-                    incomes = incomes,
-                    emptyMessage = emptyMessage,
-                    contextMenuIncome = contextMenuIncome,
-                    onContextMenuOpen = { contextMenuIncome = it },
-                    onContextMenuDismiss = { contextMenuIncome = null },
-                    onEdit = { income ->
-                        contextMenuIncome = null
-                        editingTransaction = income.toTransaction()
-                        showAddDialog = true
-                    },
-                    onDelete = { income ->
-                        contextMenuIncome = null
-                        incomeToDelete = income
-                    }
-                )
+            } else {
+                when (selectedTab) {
+                    0 -> ExpenseList(
+                        expenses = fixedExpenses,
+                        emptyMessage = emptyMessage,
+                        contextMenuExpense = contextMenuExpense,
+                        categories = categories,
+                        onContextMenuOpen = { contextMenuExpense = it },
+                        onContextMenuDismiss = { contextMenuExpense = null },
+                        onEdit = { expense ->
+                            contextMenuExpense = null
+                            editingTransaction = expense.toTransaction()
+                            showAddDialog = true
+                        },
+                        onDelete = { expense ->
+                            contextMenuExpense = null
+                            expenseToDelete = expense
+                        },
+                        getCategoryById = viewModel::getCategoryById
+                    )
+                    1 -> ExpenseList(
+                        expenses = variableExpenses,
+                        emptyMessage = emptyMessage,
+                        contextMenuExpense = contextMenuExpense,
+                        categories = categories,
+                        onContextMenuOpen = { contextMenuExpense = it },
+                        onContextMenuDismiss = { contextMenuExpense = null },
+                        onEdit = { expense ->
+                            contextMenuExpense = null
+                            editingTransaction = expense.toTransaction()
+                            showAddDialog = true
+                        },
+                        onDelete = { expense ->
+                            contextMenuExpense = null
+                            expenseToDelete = expense
+                        },
+                        getCategoryById = viewModel::getCategoryById
+                    )
+                    2 -> IncomeList(
+                        incomes = incomes,
+                        emptyMessage = emptyMessage,
+                        contextMenuIncome = contextMenuIncome,
+                        onContextMenuOpen = { contextMenuIncome = it },
+                        onContextMenuDismiss = { contextMenuIncome = null },
+                        onEdit = { income ->
+                            contextMenuIncome = null
+                            editingTransaction = income.toTransaction()
+                            showAddDialog = true
+                        },
+                        onDelete = { income ->
+                            contextMenuIncome = null
+                            incomeToDelete = income
+                        }
+                    )
+                }
             }
         }
     }

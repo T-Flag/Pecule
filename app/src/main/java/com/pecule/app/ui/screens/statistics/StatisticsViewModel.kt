@@ -41,6 +41,9 @@ class StatisticsViewModel @Inject constructor(
     private val _selectedCycle = MutableStateFlow<BudgetCycle?>(null)
     val selectedCycle: StateFlow<BudgetCycle?> = _selectedCycle.asStateFlow()
 
+    private val _isLoading = MutableStateFlow(true)
+    val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
+
     private val categories = categoryRepository.getAllCategories()
         .stateIn(
             scope = viewModelScope,
@@ -53,6 +56,9 @@ class StatisticsViewModel @Inject constructor(
             budgetCycleRepository.currentCycle.collect { cycle ->
                 if (_selectedCycle.value == null) {
                     _selectedCycle.value = cycle
+                }
+                if (_isLoading.value) {
+                    _isLoading.value = false
                 }
             }
         }

@@ -109,18 +109,18 @@ Unit tests are in `app/src/test/java/com/pecule/app/`:
 | `OnboardingValidationTest.kt` | 18 | Form validation |
 | `BalanceCalculatorTest.kt` | 6 | Balance calculations |
 | `CycleManagerTest.kt` | 10 | Cycle creation and duplication |
-| `DashboardViewModelTest.kt` | 6 | Dashboard logic |
+| `DashboardViewModelTest.kt` | 8 | Dashboard logic |
 | `TransactionDialogValidationTest.kt` | 16 | Transaction form validation |
 | `AddTransactionViewModelTest.kt` | 23 | Add/edit transaction logic |
 | `DeleteConfirmationTest.kt` | 4 | Delete confirmation logic |
-| `BudgetViewModelTest.kt` | 10 | Budget screen logic |
+| `BudgetViewModelTest.kt` | 12 | Budget screen logic |
 | `BudgetSwipeDeleteTest.kt` | 5 | Swipe to delete transactions |
 | `BudgetSwipeEditTest.kt` | 6 | Swipe to edit transactions |
 | `ProfileViewModelTest.kt` | 9 | Profile screen logic |
 | `CategoriesViewModelTest.kt` | 11 | Categories CRUD and validation |
-| `StatisticsViewModelTest.kt` | 9 | Statistics screen logic |
+| `StatisticsViewModelTest.kt` | 11 | Statistics screen logic |
 
-**Total : 164 tests**
+**Total : 170 tests**
 
 Use JUnit 4 assertions. For coroutines, use `kotlinx-coroutines-test` with `runTest`.
 Fake repositories are in test directories for mocking.
@@ -224,7 +224,8 @@ PeculeTheme accepts `themePreference` parameter and applies the correct color sc
 - CycleManager: create new cycle, auto-duplicate fixed expenses/incomes
 - CategoryEntity migration: categories stored in Room database
 - Custom categories UI: create, edit, delete with color/icon picker
-- 164 unit tests passing
+- Loading states with shimmer placeholders on all screens
+- 170 unit tests passing
 
 ### App Features Complete 🎉
 - Full budget cycle management

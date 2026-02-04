@@ -69,6 +69,35 @@ class BudgetViewModelTest {
         )
     }
 
+    // ==================== LOADING TESTS ====================
+
+    @Test
+    fun `isLoading is true initially before cycle data is emitted`() = runTest(testDispatcher) {
+        // Given: no cycle in repository yet
+        // When: creating ViewModel without advancing idle
+        viewModel = createViewModel()
+
+        // Then: isLoading should be true initially
+        assertTrue(viewModel.isLoading.value)
+    }
+
+    @Test
+    fun `isLoading becomes false after cycle data is emitted`() = runTest(testDispatcher) {
+        // Given: a cycle in repository
+        fakeBudgetCycleRepository.setCurrentCycle(
+            BudgetCycle(id = 1, amount = 2500.0, startDate = LocalDate.of(2025, 1, 25), endDate = null)
+        )
+
+        // When: creating ViewModel and advancing
+        viewModel = createViewModel()
+        val job = launch { viewModel.isLoading.collect {} }
+        advanceUntilIdle()
+
+        // Then: isLoading should be false
+        assertTrue(!viewModel.isLoading.value)
+        job.cancel()
+    }
+
     // ==================== FIXED EXPENSES TESTS ====================
 
     @Test

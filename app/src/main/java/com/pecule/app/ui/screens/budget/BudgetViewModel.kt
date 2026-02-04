@@ -34,6 +34,19 @@ class BudgetViewModel @Inject constructor(
     private val _selectedTab = MutableStateFlow(0)
     val selectedTab: StateFlow<Int> = _selectedTab.asStateFlow()
 
+    private val _isLoading = MutableStateFlow(true)
+    val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
+
+    init {
+        viewModelScope.launch {
+            budgetCycleRepository.currentCycle.collect { cycle ->
+                if (cycle != null || _isLoading.value) {
+                    _isLoading.value = false
+                }
+            }
+        }
+    }
+
     val categories: StateFlow<List<CategoryEntity>> = categoryRepository.getAllCategories()
         .stateIn(
             scope = viewModelScope,

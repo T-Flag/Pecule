@@ -43,6 +43,7 @@ import com.pecule.app.data.local.database.entity.BudgetCycle
 import com.pecule.app.data.local.database.entity.CategoryEntity
 import com.pecule.app.ui.components.CategoryColors
 import com.pecule.app.ui.components.DonutChart
+import com.pecule.app.ui.components.DonutChartPlaceholder
 import java.text.NumberFormat
 import java.time.format.DateTimeFormatter
 import java.util.Locale
@@ -58,6 +59,7 @@ fun StatisticsScreen(
     val totalExpenses by viewModel.totalExpenses.collectAsState()
     val totalIncomes by viewModel.totalIncomes.collectAsState()
     val balance by viewModel.balance.collectAsState()
+    val isLoading by viewModel.isLoading.collectAsState()
 
     StatisticsContent(
         cycles = cycles,
@@ -66,6 +68,7 @@ fun StatisticsScreen(
         totalExpenses = totalExpenses,
         totalIncomes = totalIncomes,
         balance = balance,
+        isLoading = isLoading,
         onCycleSelected = viewModel::selectCycle,
         modifier = modifier
     )
@@ -79,6 +82,7 @@ private fun StatisticsContent(
     totalExpenses: Double,
     totalIncomes: Double,
     balance: Double,
+    isLoading: Boolean = false,
     onCycleSelected: (BudgetCycle) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -99,11 +103,15 @@ private fun StatisticsContent(
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        DonutChart(
-            data = expensesByCategory,
-            size = 220.dp,
-            strokeWidth = 36.dp
-        )
+        if (isLoading) {
+            DonutChartPlaceholder()
+        } else {
+            DonutChart(
+                data = expensesByCategory,
+                size = 220.dp,
+                strokeWidth = 36.dp
+            )
+        }
 
         Spacer(modifier = Modifier.height(24.dp))
 

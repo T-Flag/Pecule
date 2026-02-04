@@ -51,9 +51,11 @@ import com.pecule.app.ui.components.AddTransactionDialog
 import com.pecule.app.ui.components.AddTransactionUiState
 import com.pecule.app.ui.components.AddTransactionViewModel
 import com.pecule.app.ui.components.BalanceCard
+import com.pecule.app.ui.components.BalanceCardPlaceholder
 import com.pecule.app.ui.components.DeleteConfirmationDialog
 import com.pecule.app.ui.components.SwipeableTransactionItem
 import com.pecule.app.ui.components.TransactionItem
+import com.pecule.app.ui.components.TransactionListPlaceholder
 import com.pecule.app.ui.theme.PeculeTheme
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
@@ -71,6 +73,7 @@ fun DashboardScreen(
     val recentTransactions by viewModel.recentTransactions.collectAsStateWithLifecycle()
     val currentCycleId by viewModel.currentCycleId.collectAsStateWithLifecycle()
     val categories by viewModel.categories.collectAsStateWithLifecycle()
+    val isLoading by viewModel.isLoading.collectAsStateWithLifecycle()
 
     var showFabMenu by remember { mutableStateOf(false) }
     var showAddDialog by remember { mutableStateOf(false) }
@@ -128,6 +131,7 @@ fun DashboardScreen(
             currentBalance = currentBalance,
             budgetPercentageUsed = budgetPercentageUsed,
             recentTransactions = recentTransactions,
+            isLoading = isLoading,
             onNavigateToProfile = onNavigateToProfile,
             contextMenuTransaction = contextMenuTransaction,
             onContextMenuOpen = { contextMenuTransaction = it },
@@ -231,6 +235,7 @@ private fun DashboardContent(
     currentBalance: Double,
     budgetPercentageUsed: Float,
     recentTransactions: List<Transaction>,
+    isLoading: Boolean = false,
     onNavigateToProfile: () -> Unit,
     contextMenuTransaction: Transaction? = null,
     onContextMenuOpen: (Transaction) -> Unit = {},
@@ -278,10 +283,14 @@ private fun DashboardContent(
         Spacer(modifier = Modifier.height(24.dp))
 
         // Balance Card
-        BalanceCard(
-            balance = currentBalance,
-            percentageUsed = budgetPercentageUsed
-        )
+        if (isLoading) {
+            BalanceCardPlaceholder()
+        } else {
+            BalanceCard(
+                balance = currentBalance,
+                percentageUsed = budgetPercentageUsed
+            )
+        }
 
         Spacer(modifier = Modifier.height(24.dp))
 
@@ -295,7 +304,9 @@ private fun DashboardContent(
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        if (recentTransactions.isEmpty()) {
+        if (isLoading) {
+            TransactionListPlaceholder(itemCount = 3)
+        } else if (recentTransactions.isEmpty()) {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()

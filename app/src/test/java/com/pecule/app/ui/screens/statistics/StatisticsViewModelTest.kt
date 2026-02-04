@@ -23,6 +23,7 @@ import kotlinx.coroutines.test.setMain
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import java.time.LocalDate
@@ -69,6 +70,37 @@ class StatisticsViewModelTest {
             fakeCategoryRepository
         )
     }
+
+    // ==================== LOADING TESTS ====================
+
+    @Test
+    fun `isLoading is true initially before cycle data is emitted`() = runTest(testDispatcher) {
+        // Given: no current cycle in repository yet
+        // When: creating ViewModel without advancing idle
+        viewModel = createViewModel()
+
+        // Then: isLoading should be true initially
+        assertTrue(viewModel.isLoading.value)
+    }
+
+    @Test
+    fun `isLoading becomes false after current cycle is emitted`() = runTest(testDispatcher) {
+        // Given: a current cycle in repository
+        val cycle = BudgetCycle(1, 2000.0, LocalDate.of(2025, 1, 1), null)
+        fakeBudgetCycleRepository.setCycles(listOf(cycle))
+        fakeBudgetCycleRepository.setCurrentCycle(cycle)
+
+        // When: creating ViewModel and advancing
+        viewModel = createViewModel()
+        val job = launch { viewModel.isLoading.collect {} }
+        advanceUntilIdle()
+
+        // Then: isLoading should be false
+        assertTrue(!viewModel.isLoading.value)
+        job.cancel()
+    }
+
+    // ==================== CYCLES TESTS ====================
 
     @Test
     fun `cycles contains all cycles from repository`() = runTest(testDispatcher) {
